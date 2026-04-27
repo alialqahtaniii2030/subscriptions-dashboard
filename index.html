@@ -119,6 +119,9 @@ tr:hover td{background:rgba(255,255,255,.03)}
 .btn-cancel{padding:10px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--muted);font-size:13px;font-family:'Cairo',sans-serif;cursor:pointer}
 .err{color:var(--red);font-size:11px;margin-top:4px;display:none}
 .footer{text-align:center;font-size:11px;color:var(--muted);padding-top:8px;opacity:.5}
+.editable-date{cursor:pointer;color:var(--muted);border-bottom:1px dashed rgba(255,255,255,.3);padding:2px 6px;border-radius:4px;transition:all .15s;font-size:12px}
+.editable-date:hover{color:var(--blue);border-color:var(--blue);background:rgba(30,111,217,.1)}
+.editable-date:hover::after{content:' ✏️';font-size:10px}
 </style>
 </head>
 <body>
@@ -306,7 +309,7 @@ function renderTable(f){
         <td><span class="badge ${freqBadge[s.freq]}">${freqLabel[s.freq]}</span></td>
         <td style="font-weight:500">${s.amount>0?s.amount.toLocaleString():'—'}</td>
         <td style="color:var(--muted)">${s.usd}</td>
-        <td style="color:var(--muted)">${s.end}</td>
+        <td><span class="editable-date" onclick="editDate(${idx})" title="انقر لتعديل التاريخ">${s.end||'-'}</span></td>
         <td><span class="badge ${s.status==='active'?'b-active':'b-stopped'}">${s.status==='active'?'نشط':'متوقف'}</span></td>
         <td><button class="btn-del" onclick="deleteSub(${idx})">✕</button></td>
       </tr>`;
@@ -381,8 +384,28 @@ function saveSystem(){
   if(!valid)return;
   subs.push({name,company,freq:document.getElementById('f-freq').value,amount:parseFloat(document.getElementById('f-amount').value)||0,usd:document.getElementById('f-usd').value.trim()||'-',end:document.getElementById('f-end').value.trim()||'-',status:document.getElementById('f-status').value});
   activeCompany='all';activeStatus='all';
-  closeModal();refresh();
+  closeModal();localStorage.setItem('subs_dashboard_data',JSON.stringify(subs));refresh();
 }
+// تحميل البيانات من localStorage عند بدء التشغيل
+(function(){
+  const saved = localStorage.getItem('subs_dashboard_data');
+  if(saved){try{const p=JSON.parse(saved);if(Array.isArray(p)&&p.length>0)subs=p;}catch(e){}}
+})();
+
+// تعديل تاريخ الانتهاء بالنقر
+function editDate(i){
+  const cur = subs[i].end&&subs[i].end!=='-'?subs[i].end:'';
+  const val = prompt('تعديل تاريخ انتهاء: '+subs[i].name+'\n(مثال: 31/12/2026 أو اتركه فارغاً لإزالة التاريخ)', cur);
+  if(val===null)return;
+  subs[i].end = val.trim()||'-';
+  localStorage.setItem('subs_dashboard_data', JSON.stringify(subs));
+  refresh();
+}
+
+// حفظ عند حذف
+const _origDelete = deleteSub;
+function deleteSub(i){_origDelete(i);localStorage.setItem('subs_dashboard_data', JSON.stringify(subs));}
+
 refresh();
 </script>
 </body>
