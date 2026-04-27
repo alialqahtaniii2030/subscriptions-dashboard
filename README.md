@@ -11,3 +11,6 @@
 - إضافة وحذف أنظمة جديدة تلقائياً
 - مخططات بيانية تفاعلية
 - يعمل على أي متصفح بدون إنترنت
+
+LINLK : 
+https://alialqahtaniii2030.github.io/subscriptions-dashboard/
