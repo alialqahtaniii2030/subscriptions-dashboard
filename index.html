@@ -129,7 +129,7 @@ tr:hover td{background:rgba(255,255,255,.03)}
   <div class="header">
     <div class="header-left">
       <h1>لوحة متابعة الاشتراكات التقنية</h1>
-      <p>آخر تحديث: أبريل 2026</p>
+      <p>آخر تحديث: مايو 2026</p>
     </div>
     <button class="btn-add" onclick="openModal()">+ إضافة نظام</button>
   </div>
@@ -188,7 +188,7 @@ tr:hover td{background:rgba(255,255,255,.03)}
     </div>
     <div class="form-row">
       <label>الشركة المسؤولة *</label>
-      <input id="f-company" type="text" placeholder="مثال: دي باور" list="companies-list">
+      <input id="f-company" type="text" placeholder="مثال: دي بالر" list="companies-list">
       <datalist id="companies-list"></datalist>
       <div class="err" id="err-company">يرجى إدخال الشركة</div>
     </div>
@@ -229,23 +229,44 @@ tr:hover td{background:rgba(255,255,255,.03)}
 </div>
 
 <script>
-let subs = [
-  {name:'هوستقيتور',        company:'دي باور',           freq:'yearly',    amount:1435,  usd:'382.67$', end:'11/04/2027', status:'active'},
-  {name:'ادارتك',            company:'دي باور',           freq:'quarterly', amount:6,     usd:'-',       end:'-',          status:'active'},
-  {name:'الوزاب',            company:'دي باور (مبيعات)',  freq:'monthly',   amount:270,   usd:'72$',     end:'45916',      status:'active'},
-  {name:'كارزون',            company:'دي باور عمليات',    freq:'monthly',   amount:0,     usd:'-',       end:'-',          status:'active'},
-  {name:'وات سي آر إم',     company:'سيفتي سايد',        freq:'monthly',   amount:0,     usd:'-',       end:'16/12/2025', status:'stopped'},
-  {name:'دفاتر – حسابات',   company:'دي باور',           freq:'yearly',    amount:13180, usd:'-',       end:'-',          status:'active'},
-  {name:'دفاتر – ERP',      company:'دي باور',           freq:'yearly',    amount:4554,  usd:'-',       end:'-',          status:'active'},
-  {name:'بتركس',             company:'دي باور',           freq:'quarterly', amount:2250,  usd:'600$',    end:'46146',      status:'active'},
-  {name:'اودو',              company:'دي باور',           freq:'yearly',    amount:6888,  usd:'1,836$',  end:'46240',      status:'active'},
-  {name:'سيرفر أودو',        company:'دي باور',           freq:'monthly',   amount:28,    usd:'7.60$',   end:'-',          status:'active'},
-  {name:'النطاقات (الخطوط)',company:'الخطوط المتتالية',   freq:'yearly',    amount:99,    usd:'-',       end:'27/08/2026', status:'active'},
-  {name:'النطاقات (سيفتي)', company:'سيفتي سايد',        freq:'yearly',    amount:99,    usd:'-',       end:'18/04/2025', status:'active'},
-  {name:'النطاقات (دي باور)',company:'دي باور',           freq:'yearly',    amount:99,    usd:'-',       end:'30/12/2026', status:'active'},
-  {name:'سند بلس',           company:'هيكل العربة',       freq:'monthly',   amount:0,     usd:'-',       end:'1/12/2025',  status:'stopped'},
-  {name:'الوزاب (عمليات)',   company:'دي باور (عمليات)',  freq:'monthly',   amount:270,   usd:'72$',     end:'20/12/2025', status:'stopped'},
+// ✅ تعريف البيانات الافتراضية
+const defaultSubs = [
+  {name:'فيسثنيثر',        company:'دي بالر',           freq:'yearly',    amount:1435,  usd:'382.67$', end:'11/04/2027', status:'active'},
+  {name:'ادارتي',          company:'دي بالر',           freq:'quarterly', amount:6,     usd:'-',       end:'-',          status:'active'},
+  {name:'الوزاب',          company:'دي بالر (مبيعات)',  freq:'monthly',   amount:270,   usd:'72$',     end:'01/12/2025', status:'active'},
+  {name:'فارزيو',          company:'دي بالر عقليات',    freq:'monthly',   amount:0,     usd:'-',       end:'-',          status:'active'},
+  {name:'فات سي آر إن',    company:'سنيتي سايد',        freq:'monthly',   amount:0,     usd:'-',       end:'16/12/2025', status:'stopped'},
+  {name:'دواتر — حسابات', company:'دي بالر',           freq:'yearly',    amount:13180, usd:'-',       end:'-',          status:'active'},
+  {name:'دواتر — ERP',    company:'دي بالر',           freq:'yearly',    amount:4554,  usd:'-',       end:'-',          status:'active'},
+  {name:'بتروس',           company:'دي بالر',           freq:'quarterly', amount:2250,  usd:'600$',    end:'20/07/2026', status:'active'},
+  {name:'الدو',            company:'دي بالر',           freq:'yearly',    amount:6888,  usd:'1,836$',  end:'21/10/2026', status:'active'},
+  {name:'سيرور أندو',      company:'دي بالر',           freq:'monthly',   amount:28,    usd:'7.60$',   end:'-',          status:'active'},
+  {name:'الطاقات (الخطوط)',company:'الخطوط المتتالية',  freq:'yearly',    amount:99,    usd:'-',       end:'27/08/2026', status:'active'},
+  {name:'الطاقات (سنيتي)', company:'سنيتي سايد',        freq:'yearly',    amount:99,    usd:'-',       end:'18/04/2025', status:'active'},
+  {name:'الطاقات (دي بالر)',company:'دي بالر',          freq:'yearly',    amount:99,    usd:'-',       end:'30/12/2026', status:'active'},
+  {name:'سيد بوس',         company:'فيون العربية',      freq:'monthly',   amount:0,     usd:'-',       end:'01/12/2025', status:'stopped'},
+  {name:'الوزاب (عقليات)', company:'دي بالر (عقليات)', freq:'monthly',   amount:270,   usd:'72$',     end:'20/12/2025', status:'stopped'},
 ];
+
+// ✅ تحميل البيانات من localStorage أولاً (إن وجدت)، وإلا استخدام البيانات الافتراضية
+let subs;
+(function(){
+  try {
+    const saved = localStorage.getItem('subs_dashboard_data');
+    if(saved){
+      const parsed = JSON.parse(saved);
+      if(Array.isArray(parsed) && parsed.length > 0){
+        subs = parsed;
+        return;
+      }
+    }
+  } catch(e) {}
+  subs = defaultSubs.map(s => Object.assign({}, s));
+})();
+
+function saveData(){
+  localStorage.setItem('subs_dashboard_data', JSON.stringify(subs));
+}
 
 const COLORS=['#1E6FD9','#00C9B1','#FFB347','#4CD97B','#FF5B5B','#7B61FF','#2E8AF6','#FF8C42','#00E5CC','#A8FF78'];
 const freqLabel={monthly:'شهري',quarterly:'ربع سنوي',yearly:'سنوي'};
@@ -270,7 +291,7 @@ function renderMetrics(f){
     <div class="metric m-blue"><div class="metric-icon">📦</div><div class="metric-value">${f.length}</div><div class="metric-label">إجمالي الأنظمة</div><div class="metric-sub">من أصل ${subs.length}</div></div>
     <div class="metric m-green"><div class="metric-icon">✅</div><div class="metric-value" style="color:var(--green)">${active}</div><div class="metric-label">الأنظمة النشطة</div><div class="metric-sub">${stopped} متوقفة</div></div>
     <div class="metric m-accent"><div class="metric-icon">📅</div><div class="metric-value" style="color:var(--accent2)">${yearly.toLocaleString()}</div><div class="metric-label">الإجمالي السنوي</div><div class="metric-sub">ريال سعودي</div></div>
-    <div class="metric m-orange"><div class="metric-icon">🔄</div><div class="metric-value">${monthly.toLocaleString()}</div><div class="metric-label">الإجمالي الشهري</div><div class="metric-sub">ريال سعودي</div></div>`;
+    <div class="metric m-orange"><div class="metric-icon">📆</div><div class="metric-value">${monthly.toLocaleString()}</div><div class="metric-label">الإجمالي الشهري</div><div class="metric-sub">ريال سعودي</div></div>`;
 }
 
 function renderAlerts(){
@@ -279,8 +300,8 @@ function renderAlerts(){
   subs.forEach(s=>{byCompany[s.company]=(byCompany[s.company]||0)+s.amount;});
   const topCo=Object.entries(byCompany).sort((a,b)=>b[1]-a[1])[0];
   document.getElementById('alerts').innerHTML=`
-    <div class="alert-card a-warn"><div class="alert-title">⏰ تجديد قادم</div><div class="alert-body">هوستقيتور — 11/04/2027<br>النطاقات (الخطوط) — 27/08/2026</div></div>
-    <div class="alert-card a-red"><div class="alert-title">⛔ أنظمة متوقفة (${stopped.length})</div><div class="alert-body">${stopped.map(s=>s.name).join('<br>')}</div></div>
+    <div class="alert-card a-warn"><div class="alert-title">⏰ تجديد قادم</div><div class="alert-body">فيسثنيثر — 11/04/2027<br>الطاقات (الخطوط) — 27/08/2026</div></div>
+    <div class="alert-card a-red"><div class="alert-title">❌ أنظمة متوقفة (${stopped.length})</div><div class="alert-body">${stopped.map(s=>s.name).join('<br>')}</div></div>
     <div class="alert-card a-teal"><div class="alert-title">🏆 أعلى شركة تكلفةً</div><div class="alert-body">${topCo[0]}<br><strong>${topCo[1].toLocaleString()} ر.س</strong></div></div>`;
 }
 
@@ -363,7 +384,13 @@ function refresh(){
 }
 function setStatus(val){activeStatus=val;refresh();}
 function setCompany(val){activeCompany=val;refresh();}
-function deleteSub(idx){if(!confirm(`حذف "${subs[idx].name}"؟`))return;subs.splice(idx,1);refresh();}
+
+function deleteSub(idx){
+  if(!confirm(`حذف "${subs[idx].name}"؟`))return;
+  subs.splice(idx,1);
+  saveData();
+  refresh();
+}
 
 function openModal(){
   ['f-name','f-company','f-amount','f-usd','f-end'].forEach(id=>document.getElementById(id).value='');
@@ -382,29 +409,29 @@ function saveSystem(){
   if(!name){document.getElementById('err-name').style.display='block';valid=false;}else document.getElementById('err-name').style.display='none';
   if(!company){document.getElementById('err-company').style.display='block';valid=false;}else document.getElementById('err-company').style.display='none';
   if(!valid)return;
-  subs.push({name,company,freq:document.getElementById('f-freq').value,amount:parseFloat(document.getElementById('f-amount').value)||0,usd:document.getElementById('f-usd').value.trim()||'-',end:document.getElementById('f-end').value.trim()||'-',status:document.getElementById('f-status').value});
+  subs.push({
+    name, company,
+    freq:document.getElementById('f-freq').value,
+    amount:parseFloat(document.getElementById('f-amount').value)||0,
+    usd:document.getElementById('f-usd').value.trim()||'-',
+    end:document.getElementById('f-end').value.trim()||'-',
+    status:document.getElementById('f-status').value
+  });
   activeCompany='all';activeStatus='all';
-  closeModal();localStorage.setItem('subs_dashboard_data',JSON.stringify(subs));refresh();
-}
-// تحميل البيانات من localStorage عند بدء التشغيل
-(function(){
-  const saved = localStorage.getItem('subs_dashboard_data');
-  if(saved){try{const p=JSON.parse(saved);if(Array.isArray(p)&&p.length>0)subs=p;}catch(e){}}
-})();
-
-// تعديل تاريخ الانتهاء بالنقر
-function editDate(i){
-  const cur = subs[i].end&&subs[i].end!=='-'?subs[i].end:'';
-  const val = prompt('تعديل تاريخ انتهاء: '+subs[i].name+'\n(مثال: 31/12/2026 أو اتركه فارغاً لإزالة التاريخ)', cur);
-  if(val===null)return;
-  subs[i].end = val.trim()||'-';
-  localStorage.setItem('subs_dashboard_data', JSON.stringify(subs));
+  closeModal();
+  saveData();
   refresh();
 }
 
-// حفظ عند حذف
-const _origDelete = deleteSub;
-function deleteSub(i){_origDelete(i);localStorage.setItem('subs_dashboard_data', JSON.stringify(subs));}
+// ✅ تعديل تاريخ الانتهاء بالنقر
+function editDate(i){
+  const cur = subs[i].end && subs[i].end !== '-' ? subs[i].end : '';
+  const val = prompt('تعديل تاريخ انتهاء: ' + subs[i].name + '\n(مثال: 31/12/2026 أو اتركه فارغاً لإزالة التاريخ)', cur);
+  if(val === null) return;
+  subs[i].end = val.trim() || '-';
+  saveData();
+  refresh();
+}
 
 refresh();
 </script>
