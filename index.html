@@ -1,44 +1,47 @@
-<!DOCTYPE html>  
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>داشبورد الاشتراكات التقنية</title>
+<!-- Chart.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<!-- SheetJS for Excel export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- jsPDF for PDF export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- jsPDF AutoTable plugin -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --dark:    #0D1B2A;
-  --dark2:   #1B2D40;
-  --dark3:   #243447;
-  --blue:    #1E6FD9;
-  --blue2:   #2E8AF6;
-  --accent:  #00C9B1;
-  --accent2: #FFB347;
-  --red:     #FF5B5B;
-  --green:   #4CD97B;
-  --text:    #E8F0FE;
-  --muted:   #8FA8C8;
-  --border:  rgba(255,255,255,0.07);
-  --card:    rgba(255,255,255,0.04);
+  --dark: #0D1B2A; --dark2: #1B2D40; --dark3: #243447;
+  --blue: #1E6FD9; --blue2: #2E8AF6;
+  --accent: #00C9B1; --accent2: #FFB347;
+  --red: #FF5B5B; --green: #4CD97B;
+  --text: #E8F0FE; --muted: #8FA8C8;
+  --border: rgba(255,255,255,0.07); --card: rgba(255,255,255,0.04);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--dark);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;direction:rtl}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%, rgba(30,111,217,0.12) 0%, transparent 60%),radial-gradient(ellipse at 80% 80%, rgba(0,201,177,0.08) 0%, transparent 60%);pointer-events:none;z-index:0}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(30,111,217,.12) 0%,transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(0,201,177,.08) 0%,transparent 60%);pointer-events:none;z-index:0}
 .wrap{max-width:1200px;margin:0 auto;padding:28px 24px;position:relative;z-index:1}
-
-/* Header */
-.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
-.header-left h1{font-size:22px;font-weight:700;letter-spacing:-0.3px}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:10px}
+.header-left h1{font-size:22px;font-weight:700;letter-spacing:-.3px}
 .header-left p{font-size:13px;color:var(--muted);margin-top:3px}
+.header-btns{display:flex;gap:8px;flex-wrap:wrap}
 .btn-add{display:flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;font-size:13px;font-family:'Cairo',sans-serif;font-weight:600;cursor:pointer;transition:opacity .2s,transform .15s}
 .btn-add:hover{opacity:.9;transform:translateY(-1px)}
-
-/* Metrics */
+/* زر Excel */
+.btn-excel{display:flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a7a4a,#22a563);color:#fff;font-size:13px;font-family:'Cairo',sans-serif;font-weight:600;cursor:pointer;transition:opacity .2s,transform .15s}
+.btn-excel:hover{opacity:.9;transform:translateY(-1px)}
+/* زر PDF */
+.btn-pdf{display:flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,#c0392b,#e74c3c);color:#fff;font-size:13px;font-family:'Cairo',sans-serif;font-weight:600;cursor:pointer;transition:opacity .2s,transform .15s}
+.btn-pdf:hover{opacity:.9;transform:translateY(-1px)}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
 .metric{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;transition:border-color .2s}
-.metric:hover{border-color:rgba(255,255,255,0.15)}
+.metric:hover{border-color:rgba(255,255,255,.15)}
 .metric::before{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:0 14px 0 60px;opacity:.15}
 .metric.m-blue::before{background:var(--blue2)}
 .metric.m-green::before{background:var(--green)}
@@ -48,8 +51,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .metric-value{font-size:26px;font-weight:700;line-height:1}
 .metric-label{font-size:12px;color:var(--muted);margin-top:5px}
 .metric-sub{font-size:11px;margin-top:3px;opacity:.7}
-
-/* Alerts */
 .alerts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
 .alert-card{border-radius:12px;padding:14px 16px;border:1px solid}
 .a-warn{background:rgba(255,179,71,.08);border-color:rgba(255,179,71,.3)}
@@ -60,8 +61,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .a-red .alert-title{color:var(--red)}
 .a-teal .alert-title{color:var(--accent)}
 .alert-body{font-size:11px;color:var(--muted);line-height:1.6}
-
-/* Filters */
 .filters-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin-bottom:20px}
 .filter-group{margin-bottom:10px}
 .filter-group:last-child{margin-bottom:0}
@@ -71,16 +70,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .fbtn:hover{border-color:rgba(255,255,255,.25);color:var(--text)}
 .fbtn.fs-active{background:var(--blue);border-color:var(--blue);color:#fff}
 .fbtn.fc-active{background:var(--accent);border-color:var(--accent);color:var(--dark)}
-
-/* Charts row */
 .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
 .chart-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
-.chart-card h3{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em;font-size:11px}
+.chart-card h3{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em}
 .legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .legend span{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
 .ldot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-
-/* Table */
 .table-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:20px;overflow-x:auto}
 .table-card h3{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
 .results-count{font-size:11px;color:var(--muted);margin-bottom:12px}
@@ -95,17 +90,19 @@ tr:hover td{background:rgba(255,255,255,.03)}
 .b-monthly{background:rgba(30,111,217,.2);color:#7DB8F7;border:1px solid rgba(30,111,217,.3)}
 .b-quarterly{background:rgba(255,179,71,.15);color:#FFB347;border:1px solid rgba(255,179,71,.3)}
 .b-yearly{background:rgba(0,201,177,.15);color:#00C9B1;border:1px solid rgba(0,201,177,.3)}
-.btn-del{background:none;border:none;cursor:pointer;color:rgba(255,91,91,.5);font-size:13px;padding:3px 7px;border-radius:6px;transition:all .15s}
+/* أزرار الإجراءات في الجدول */
+.actions-cell{display:flex;gap:5px;justify-content:flex-end}
+.btn-del{background:none;border:none;cursor:pointer;color:rgba(255,91,91,.5);font-size:13px;padding:5px 7px;border-radius:6px;transition:all .15s}
 .btn-del:hover{background:rgba(255,91,91,.15);color:var(--red)}
-
-/* Full-width hbar */
+/* زر التعديل */
+.btn-edit{background:none;border:none;cursor:pointer;color:rgba(30,111,217,.6);font-size:13px;padding:5px 7px;border-radius:6px;transition:all .15s}
+.btn-edit:hover{background:rgba(30,111,217,.15);color:var(--blue2)}
 .chart-full{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:24px}
 .chart-full h3{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em}
-
-/* Modal */
+/* Modal الرئيسي */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:999;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
-.modal{background:var(--dark2);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:28px;width:440px;max-width:95vw}
+.modal{background:var(--dark2);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:28px;width:440px;max-width:95vw;max-height:90vh;overflow-y:auto}
 .modal h3{font-size:16px;font-weight:700;margin-bottom:20px}
 .form-row{margin-bottom:14px}
 .form-row label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500}
@@ -118,25 +115,39 @@ tr:hover td{background:rgba(255,255,255,.03)}
 .btn-save:hover{opacity:.9}
 .btn-cancel{padding:10px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--muted);font-size:13px;font-family:'Cairo',sans-serif;cursor:pointer}
 .err{color:var(--red);font-size:11px;margin-top:4px;display:none}
-.footer{text-align:center;font-size:11px;color:var(--muted);padding-top:8px;opacity:.5}
+/* Toast notification */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(76,217,123,.15);border:1px solid rgba(76,217,123,.4);color:#4CD97B;padding:10px 22px;border-radius:10px;font-size:13px;font-family:'Cairo',sans-serif;font-weight:600;z-index:9999;transition:transform .3s ease,opacity .3s ease;opacity:0;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .editable-date{cursor:pointer;color:var(--muted);border-bottom:1px dashed rgba(255,255,255,.3);padding:2px 6px;border-radius:4px;transition:all .15s;font-size:12px}
 .editable-date:hover{color:var(--blue);border-color:var(--blue);background:rgba(30,111,217,.1)}
-.editable-date:hover::after{content:' ✏️';font-size:10px}
+.footer{text-align:center;font-size:11px;color:var(--muted);padding-top:8px;opacity:.5}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <!-- Header -->
   <div class="header">
     <div class="header-left">
       <h1>لوحة متابعة الاشتراكات التقنية</h1>
       <p>آخر تحديث: مايو 2026</p>
     </div>
-    <button class="btn-add" onclick="openModal()">+ إضافة نظام</button>
+    <div class="header-btns">
+      <!-- زر تصدير Excel -->
+      <button class="btn-excel" onclick="exportExcel()">📊 تصدير Excel</button>
+      <!-- زر تصدير PDF -->
+      <button class="btn-pdf" onclick="exportPDF()">📄 تصدير PDF</button>
+      <!-- زر إضافة نظام -->
+      <button class="btn-add" onclick="openAddModal()">+ إضافة نظام</button>
+    </div>
   </div>
 
+  <!-- البطاقات الإحصائية -->
   <div class="metrics" id="metrics"></div>
-  <div class="alerts"  id="alerts"></div>
 
+  <!-- التنبيهات -->
+  <div class="alerts" id="alerts"></div>
+
+  <!-- الفلاتر -->
   <div class="filters-card">
     <div class="filter-group">
       <div class="filter-label">الحالة / طريقة الدفع</div>
@@ -148,6 +159,7 @@ tr:hover td{background:rgba(255,255,255,.03)}
     </div>
   </div>
 
+  <!-- الرسوم البيانية -->
   <div class="charts-row">
     <div class="chart-card">
       <h3>توزيع التكلفة</h3>
@@ -160,15 +172,28 @@ tr:hover td{background:rgba(255,255,255,.03)}
     </div>
   </div>
 
+  <!-- جدول الاشتراكات -->
   <div class="table-card">
     <h3>جميع الاشتراكات</h3>
     <div class="results-count" id="resultsCount"></div>
-    <table><thead><tr>
-      <th>النظام</th><th>الشركة</th><th>الدفع</th>
-      <th>المبلغ (ر.س)</th><th>بالدولار</th><th>الانتهاء</th><th>الحالة</th><th></th>
-    </tr></thead><tbody id="tableBody"></tbody></table>
+    <table>
+      <thead>
+        <tr>
+          <th>النظام</th>
+          <th>الشركة</th>
+          <th>الدفع</th>
+          <th>المبلغ (ر.س)</th>
+          <th>بالدولار</th>
+          <th>الانتهاء</th>
+          <th>الحالة</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
   </div>
 
+  <!-- رسم المقارنة الأفقي -->
   <div class="chart-full">
     <h3>مقارنة تكلفة الأنظمة (ر.س)</h3>
     <div id="hbarWrap" style="position:relative"><canvas id="hbarChart"></canvas></div>
@@ -176,9 +201,11 @@ tr:hover td{background:rgba(255,255,255,.03)}
 
   <div class="footer">داشبورد الاشتراكات التقنية — ديناميكي</div>
 </div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
-<!-- Modal -->
-<div class="modal-overlay" id="modalOverlay">
+<!-- Modal إضافة نظام جديد -->
+<div class="modal-overlay" id="addModalOverlay">
   <div class="modal" dir="rtl">
     <h3>إضافة نظام جديد</h3>
     <div class="form-row">
@@ -211,6 +238,7 @@ tr:hover td{background:rgba(255,255,255,.03)}
       <div class="form-row">
         <label>المبلغ (ر.س)</label>
         <input id="f-amount" type="number" placeholder="0" min="0">
+        <div class="err" id="err-amount">يرجى إدخال مبلغ صحيح (≥ 0)</div>
       </div>
       <div class="form-row">
         <label>بالدولار ($)</label>
@@ -220,219 +248,606 @@ tr:hover td{background:rgba(255,255,255,.03)}
     <div class="form-row">
       <label>تاريخ الانتهاء</label>
       <input id="f-end" type="text" placeholder="مثال: 31/12/2026">
+      <div class="err" id="err-end">صيغة التاريخ غير صحيحة (DD/MM/YYYY)</div>
     </div>
     <div class="modal-btns">
       <button class="btn-save" onclick="saveSystem()">حفظ النظام</button>
-      <button class="btn-cancel" onclick="closeModal()">إلغاء</button>
+      <button class="btn-cancel" onclick="closeAddModal()">إلغاء</button>
     </div>
   </div>
 </div>
 
+<!-- Modal تعديل اشتراك -->
+<div class="modal-overlay" id="editModalOverlay">
+  <div class="modal" dir="rtl">
+    <h3>تعديل الاشتراك</h3>
+    <input type="hidden" id="edit-idx">
+    <div class="form-row">
+      <label>اسم النظام</label>
+      <input id="edit-name" type="text" disabled style="opacity:.5;cursor:not-allowed">
+    </div>
+    <div class="form-row">
+      <label>الشركة المسؤولة *</label>
+      <input id="edit-company" type="text" list="edit-companies-list">
+      <datalist id="edit-companies-list"></datalist>
+      <div class="err" id="err-edit-company">يرجى إدخال الشركة</div>
+    </div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>المبلغ (ر.س) *</label>
+        <input id="edit-amount" type="number" min="0">
+        <div class="err" id="err-edit-amount">يرجى إدخال مبلغ صحيح (≥ 0)</div>
+      </div>
+      <div class="form-row">
+        <label>بالدولار ($)</label>
+        <input id="edit-usd" type="text" placeholder="مثال: 100$">
+      </div>
+    </div>
+    <div class="form-row">
+      <label>تاريخ الانتهاء</label>
+      <input id="edit-end" type="text" placeholder="مثال: 31/12/2026 أو - لإزالة التاريخ">
+      <div class="err" id="err-edit-end">صيغة التاريخ غير صحيحة (DD/MM/YYYY)</div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-save" onclick="saveEdit()">💾 حفظ التعديل</button>
+      <button class="btn-cancel" onclick="closeEditModal()">إلغاء</button>
+    </div>
+  </div>
+</div>
 <script>
-// ✅ تعريف البيانات الافتراضية
+// ============================================================
+// 1. البيانات الافتراضية — Single Source of Truth
+// ============================================================
 const defaultSubs = [
-  {name:'فيسثنيثر',        company:'دي بالر',           freq:'yearly',    amount:1435,  usd:'382.67$', end:'11/04/2027', status:'active'},
-  {name:'ادارتي',          company:'دي بالر',           freq:'quarterly', amount:6,     usd:'-',       end:'-',          status:'active'},
-  {name:'الوزاب',          company:'دي بالر (مبيعات)',  freq:'monthly',   amount:270,   usd:'72$',     end:'01/12/2025', status:'active'},
-  {name:'فارزيو',          company:'دي بالر عقليات',    freq:'monthly',   amount:0,     usd:'-',       end:'-',          status:'active'},
-  {name:'فات سي آر إن',    company:'سنيتي سايد',        freq:'monthly',   amount:0,     usd:'-',       end:'16/12/2025', status:'stopped'},
-  {name:'دواتر — حسابات', company:'دي بالر',           freq:'yearly',    amount:13180, usd:'-',       end:'-',          status:'active'},
-  {name:'دواتر — ERP',    company:'دي بالر',           freq:'yearly',    amount:4554,  usd:'-',       end:'-',          status:'active'},
-  {name:'بتروس',           company:'دي بالر',           freq:'quarterly', amount:2250,  usd:'600$',    end:'20/07/2026', status:'active'},
-  {name:'الدو',            company:'دي بالر',           freq:'yearly',    amount:6888,  usd:'1,836$',  end:'21/10/2026', status:'active'},
-  {name:'سيرور أندو',      company:'دي بالر',           freq:'monthly',   amount:28,    usd:'7.60$',   end:'-',          status:'active'},
-  {name:'الطاقات (الخطوط)',company:'الخطوط المتتالية',  freq:'yearly',    amount:99,    usd:'-',       end:'27/08/2026', status:'active'},
-  {name:'الطاقات (سنيتي)', company:'سنيتي سايد',        freq:'yearly',    amount:99,    usd:'-',       end:'18/04/2025', status:'active'},
-  {name:'الطاقات (دي بالر)',company:'دي بالر',          freq:'yearly',    amount:99,    usd:'-',       end:'30/12/2026', status:'active'},
-  {name:'سيد بوس',         company:'فيون العربية',      freq:'monthly',   amount:0,     usd:'-',       end:'01/12/2025', status:'stopped'},
-  {name:'الوزاب (عقليات)', company:'دي بالر (عقليات)', freq:'monthly',   amount:270,   usd:'72$',     end:'20/12/2025', status:'stopped'},
+  {name:'فيسثنيثر',       company:'دي بالر',             freq:'yearly',    amount:1435,  usd:'382.67$',  end:'11/04/2027', status:'active'},
+  {name:'ادارتي',          company:'دي بالر',             freq:'quarterly', amount:6,     usd:'-',        end:'-',          status:'active'},
+  {name:'الوزاب',          company:'دي بالر (مبيعات)',    freq:'monthly',   amount:270,   usd:'72$',      end:'01/12/2025', status:'active'},
+  {name:'فارزيو',          company:'دي بالر عقليات',      freq:'monthly',   amount:0,     usd:'-',        end:'-',          status:'active'},
+  {name:'فات سي آر إن',    company:'سنيتي سايد',          freq:'monthly',   amount:0,     usd:'-',        end:'16/12/2025', status:'stopped'},
+  {name:'دواتر — حسابات', company:'دي بالر',             freq:'yearly',    amount:13180, usd:'-',        end:'-',          status:'active'},
+  {name:'دواتر — ERP',    company:'دي بالر',             freq:'yearly',    amount:4554,  usd:'-',        end:'-',          status:'active'},
+  {name:'بتروس',           company:'دي بالر',             freq:'quarterly', amount:2250,  usd:'600$',     end:'20/07/2026', status:'active'},
+  {name:'الدو',            company:'دي بالر',             freq:'yearly',    amount:6888,  usd:'1,836$',   end:'21/10/2026', status:'active'},
+  {name:'سيرور أندو',      company:'دي بالر',             freq:'monthly',   amount:28,    usd:'7.60$',    end:'-',          status:'active'},
+  {name:'الطاقات (الخطوط)',company:'الخطوط المتتالية',    freq:'yearly',    amount:99,    usd:'-',        end:'27/08/2026', status:'active'},
+  {name:'الطاقات (سنيتي)', company:'سنيتي سايد',          freq:'yearly',    amount:99,    usd:'-',        end:'18/04/2025', status:'active'},
+  {name:'الطاقات (دي بالر)',company:'دي بالر',            freq:'yearly',    amount:99,    usd:'-',        end:'30/12/2026', status:'active'},
+  {name:'سيد بوس',         company:'فيون العربية',        freq:'monthly',   amount:0,     usd:'-',        end:'01/12/2025', status:'stopped'},
+  {name:'الوزاب (عقليات)', company:'دي بالر (عقليات)',    freq:'monthly',   amount:270,   usd:'72$',      end:'20/12/2025', status:'stopped'},
 ];
 
-// ✅ تحميل البيانات من localStorage أولاً (إن وجدت)، وإلا استخدام البيانات الافتراضية
+// ============================================================
+// 2. تحميل البيانات من localStorage أو البيانات الافتراضية
+// ============================================================
 let subs;
 (function(){
   try {
     const saved = localStorage.getItem('subs_dashboard_data');
     if(saved){
       const parsed = JSON.parse(saved);
-      if(Array.isArray(parsed) && parsed.length > 0){
-        subs = parsed;
-        return;
-      }
+      if(Array.isArray(parsed) && parsed.length > 0){ subs = parsed; return; }
     }
   } catch(e) {}
   subs = defaultSubs.map(s => Object.assign({}, s));
 })();
 
+// حفظ البيانات في localStorage
 function saveData(){
   localStorage.setItem('subs_dashboard_data', JSON.stringify(subs));
 }
 
-const COLORS=['#1E6FD9','#00C9B1','#FFB347','#4CD97B','#FF5B5B','#7B61FF','#2E8AF6','#FF8C42','#00E5CC','#A8FF78'];
-const freqLabel={monthly:'شهري',quarterly:'ربع سنوي',yearly:'سنوي'};
-const freqBadge={monthly:'b-monthly',quarterly:'b-quarterly',yearly:'b-yearly'};
-let activeStatus='all', activeCompany='all';
-let pieChart,barChart,hbarChart;
+// ============================================================
+// 3. الثوابت والمتغيرات العامة
+// ============================================================
+const COLORS = ['#1E6FD9','#00C9B1','#FFB347','#4CD97B','#FF5B5B','#7B61FF','#2E8AF6','#FF8C42','#00E5CC','#A8FF78'];
+const freqLabel = {monthly:'شهري', quarterly:'ربع سنوي', yearly:'سنوي'};
+const freqBadge = {monthly:'b-monthly', quarterly:'b-quarterly', yearly:'b-yearly'};
+let activeStatus = 'all', activeCompany = 'all';
+let pieChart, barChart, hbarChart;
 
+// ============================================================
+// 4. Toast — رسالة نجاح مؤقتة
+// ============================================================
+function showToast(msg = '✅ تم الحفظ بنجاح'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ============================================================
+// 5. التحقق من صحة التاريخ (DD/MM/YYYY أو -)
+// ============================================================
+function isValidDate(val){
+  if(!val || val === '-') return true; // السماح بالقيمة الفارغة
+  return /^\d{2}\/\d{2}\/\d{4}$/.test(val);
+}
+
+// ============================================================
+// 6. دوال العرض (Render)
+// ============================================================
+
+// الفلترة
 function getFiltered(){
-  return subs.filter(s=>{
-    const sOk=activeStatus==='all'||s.status===activeStatus||s.freq===activeStatus;
-    const cOk=activeCompany==='all'||s.company===activeCompany;
-    return sOk&&cOk;
+  return subs.filter(s => {
+    const sOk = activeStatus==='all' || s.status===activeStatus || s.freq===activeStatus;
+    const cOk = activeCompany==='all' || s.company===activeCompany;
+    return sOk && cOk;
   });
 }
 
+// البطاقات الإحصائية
 function renderMetrics(f){
-  const active=f.filter(s=>s.status==='active').length;
-  const stopped=f.filter(s=>s.status==='stopped').length;
-  const yearly=f.filter(s=>s.freq==='yearly').reduce((a,s)=>a+s.amount,0);
-  const monthly=f.filter(s=>s.freq==='monthly').reduce((a,s)=>a+s.amount,0);
-  document.getElementById('metrics').innerHTML=`
-    <div class="metric m-blue"><div class="metric-icon">📦</div><div class="metric-value">${f.length}</div><div class="metric-label">إجمالي الأنظمة</div><div class="metric-sub">من أصل ${subs.length}</div></div>
-    <div class="metric m-green"><div class="metric-icon">✅</div><div class="metric-value" style="color:var(--green)">${active}</div><div class="metric-label">الأنظمة النشطة</div><div class="metric-sub">${stopped} متوقفة</div></div>
-    <div class="metric m-accent"><div class="metric-icon">📅</div><div class="metric-value" style="color:var(--accent2)">${yearly.toLocaleString()}</div><div class="metric-label">الإجمالي السنوي</div><div class="metric-sub">ريال سعودي</div></div>
-    <div class="metric m-orange"><div class="metric-icon">📆</div><div class="metric-value">${monthly.toLocaleString()}</div><div class="metric-label">الإجمالي الشهري</div><div class="metric-sub">ريال سعودي</div></div>`;
+  const active  = f.filter(s=>s.status==='active').length;
+  const stopped = f.filter(s=>s.status==='stopped').length;
+  const yearly  = f.filter(s=>s.freq==='yearly').reduce((a,s)=>a+s.amount, 0);
+  const monthly = f.filter(s=>s.freq==='monthly').reduce((a,s)=>a+s.amount, 0);
+  document.getElementById('metrics').innerHTML =
+    `<div class="metric m-blue"><div class="metric-icon">📦</div><div class="metric-value">${f.length}</div><div class="metric-label">إجمالي الأنظمة</div><div class="metric-sub">من أصل ${subs.length}</div></div>
+     <div class="metric m-green"><div class="metric-icon">✅</div><div class="metric-value" style="color:var(--green)">${active}</div><div class="metric-label">الأنظمة النشطة</div><div class="metric-sub">${stopped} متوقفة</div></div>
+     <div class="metric m-accent"><div class="metric-icon">📅</div><div class="metric-value" style="color:var(--accent2)">${yearly.toLocaleString()}</div><div class="metric-label">الإجمالي السنوي</div><div class="metric-sub">ريال سعودي</div></div>
+     <div class="metric m-orange"><div class="metric-icon">📆</div><div class="metric-value">${monthly.toLocaleString()}</div><div class="metric-label">الإجمالي الشهري</div><div class="metric-sub">ريال سعودي</div></div>`;
 }
 
+// التنبيهات (ديناميكية بناءً على البيانات الحالية)
 function renderAlerts(){
-  const stopped=subs.filter(s=>s.status==='stopped');
-  const byCompany={};
-  subs.forEach(s=>{byCompany[s.company]=(byCompany[s.company]||0)+s.amount;});
-  const topCo=Object.entries(byCompany).sort((a,b)=>b[1]-a[1])[0];
-  document.getElementById('alerts').innerHTML=`
-    <div class="alert-card a-warn"><div class="alert-title">⏰ تجديد قادم</div><div class="alert-body">فيسثنيثر — 11/04/2027<br>الطاقات (الخطوط) — 27/08/2026</div></div>
-    <div class="alert-card a-red"><div class="alert-title">❌ أنظمة متوقفة (${stopped.length})</div><div class="alert-body">${stopped.map(s=>s.name).join('<br>')}</div></div>
-    <div class="alert-card a-teal"><div class="alert-title">🏆 أعلى شركة تكلفةً</div><div class="alert-body">${topCo[0]}<br><strong>${topCo[1].toLocaleString()} ر.س</strong></div></div>`;
+  const stopped = subs.filter(s=>s.status==='stopped');
+  const byCompany = {};
+  subs.forEach(s=>{ byCompany[s.company] = (byCompany[s.company]||0) + s.amount; });
+  const topCo = Object.entries(byCompany).sort((a,b)=>b[1]-a[1])[0];
+  // أقرب تجديد (أقرب تاريخ في المستقبل)
+  const today = new Date();
+  const upcoming = subs
+    .filter(s => s.end && s.end !== '-')
+    .map(s => {
+      const [d,m,y] = s.end.split('/');
+      return { name: s.name, date: new Date(`${y}-${m}-${d}`), dateStr: s.end };
+    })
+    .filter(s => s.date > today)
+    .sort((a,b) => a.date - b.date)
+    .slice(0,2);
+  const upcomingHTML = upcoming.length
+    ? upcoming.map(u=>`${u.name} — ${u.dateStr}`).join('<br>')
+    : 'لا توجد تجديدات قادمة';
+  document.getElementById('alerts').innerHTML =
+    `<div class="alert-card a-warn"><div class="alert-title">⏰ تجديد قادم</div><div class="alert-body">${upcomingHTML}</div></div>
+     <div class="alert-card a-red"><div class="alert-title">❌ أنظمة متوقفة (${stopped.length})</div><div class="alert-body">${stopped.map(s=>s.name).join('<br>') || 'لا توجد'}</div></div>
+     <div class="alert-card a-teal"><div class="alert-title">🏆 أعلى شركة تكلفةً</div><div class="alert-body">${topCo[0]}<br><strong>${topCo[1].toLocaleString()} ر.س</strong></div></div>`;
 }
 
+// الفلاتر
 function renderFilters(){
-  const opts=[{val:'all',label:'الكل'},{val:'active',label:'النشطة'},{val:'stopped',label:'المتوقفة'},{val:'yearly',label:'سنوي'},{val:'monthly',label:'شهري'},{val:'quarterly',label:'ربع سنوي'}];
-  document.getElementById('statusFilters').innerHTML=opts.map(o=>`<button class="fbtn${activeStatus===o.val?' fs-active':''}" onclick="setStatus('${o.val}')">${o.label}</button>`).join('');
-  const companies=['all',...Array.from(new Set(subs.map(s=>s.company))).sort()];
-  const dl=document.getElementById('companies-list');
-  if(dl)dl.innerHTML=companies.slice(1).map(c=>`<option value="${c}">`).join('');
-  document.getElementById('companyFilters').innerHTML=companies.map(c=>{
-    const label=c==='all'?'الكل':c;
-    const count=c==='all'?subs.length:subs.filter(s=>s.company===c).length;
-    return `<button class="fbtn${activeCompany===c?' fc-active':''}" onclick="setCompany('${c}')">${label} (${count})</button>`;
-  }).join('');
-}
-
-function renderTable(f){
-  document.getElementById('resultsCount').textContent=`${f.length} نتيجة من أصل ${subs.length}`;
-  document.getElementById('tableBody').innerHTML=f.length===0
-    ?`<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">لا توجد نتائج</td></tr>`
-    :f.map(s=>{
-      const idx=subs.indexOf(s);
-      return`<tr>
-        <td style="font-weight:600">${s.name}</td>
-        <td style="color:var(--muted)">${s.company}</td>
-        <td><span class="badge ${freqBadge[s.freq]}">${freqLabel[s.freq]}</span></td>
-        <td style="font-weight:500">${s.amount>0?s.amount.toLocaleString():'—'}</td>
-        <td style="color:var(--muted)">${s.usd}</td>
-        <td><span class="editable-date" onclick="editDate(${idx})" title="انقر لتعديل التاريخ">${s.end||'-'}</span></td>
-        <td><span class="badge ${s.status==='active'?'b-active':'b-stopped'}">${s.status==='active'?'نشط':'متوقف'}</span></td>
-        <td><button class="btn-del" onclick="deleteSub(${idx})">✕</button></td>
-      </tr>`;
+  const opts = [{val:'all',label:'الكل'},{val:'active',label:'النشطة'},{val:'stopped',label:'المتوقفة'},{val:'yearly',label:'سنوي'},{val:'monthly',label:'شهري'},{val:'quarterly',label:'ربع سنوي'}];
+  document.getElementById('statusFilters').innerHTML =
+    opts.map(o=>`<button class="fbtn${activeStatus===o.val?' fs-active':''}" onclick="setStatus('${o.val}')">${o.label}</button>`).join('');
+  const companies = ['all',...Array.from(new Set(subs.map(s=>s.company))).sort()];
+  const dl = document.getElementById('companies-list');
+  if(dl) dl.innerHTML = companies.slice(1).map(c=>`<option value="${c}">`).join('');
+  const edl = document.getElementById('edit-companies-list');
+  if(edl) edl.innerHTML = companies.slice(1).map(c=>`<option value="${c}">`).join('');
+  document.getElementById('companyFilters').innerHTML =
+    companies.map(c=>{
+      const label = c==='all'?'الكل':c;
+      const count = c==='all'?subs.length:subs.filter(s=>s.company===c).length;
+      return `<button class="fbtn${activeCompany===c?' fc-active':''}" onclick="setCompany('${c}')">${label} (${count})</button>`;
     }).join('');
 }
 
+// الجدول
+function renderTable(f){
+  document.getElementById('resultsCount').textContent = `${f.length} نتيجة من أصل ${subs.length}`;
+  document.getElementById('tableBody').innerHTML = f.length===0
+    ? `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">لا توجد نتائج</td></tr>`
+    : f.map(s=>{
+        const idx = subs.indexOf(s);
+        return `<tr>
+          <td style="font-weight:600">${s.name}</td>
+          <td style="color:var(--muted)">${s.company}</td>
+          <td><span class="badge ${freqBadge[s.freq]}">${freqLabel[s.freq]}</span></td>
+          <td style="font-weight:500">${s.amount>0?s.amount.toLocaleString():'—'}</td>
+          <td style="color:var(--muted)">${s.usd}</td>
+          <td><span class="editable-date" title="انقر لتعديل التاريخ" onclick="quickEditDate(${idx})">${s.end||'-'}</span></td>
+          <td><span class="badge ${s.status==='active'?'b-active':'b-stopped'}">${s.status==='active'?'نشط':'متوقف'}</span></td>
+          <td><div class="actions-cell">
+            <button class="btn-edit" onclick="openEditModal(${idx})" title="تعديل">✏️</button>
+            <button class="btn-del" onclick="deleteSub(${idx})" title="حذف">✕</button>
+          </div></td>
+        </tr>`;
+      }).join('');
+}
+
+// رسم الدونات (توزيع التكلفة)
 function renderPie(f){
-  const data=f.filter(s=>s.amount>0).sort((a,b)=>b.amount-a.amount).slice(0,8);
-  const total=data.reduce((s,d)=>s+d.amount,0);
-  document.getElementById('pieLegend').innerHTML=data.map((d,i)=>
-    `<span><span class="ldot" style="background:${COLORS[i%COLORS.length]}"></span>${d.name} ${total?Math.round(d.amount/total*100):0}%</span>`
-  ).join('');
-  if(pieChart)pieChart.destroy();
-  pieChart=new Chart(document.getElementById('pieChart'),{
+  const data  = f.filter(s=>s.amount>0).sort((a,b)=>b.amount-a.amount).slice(0,8);
+  const total = data.reduce((s,d)=>s+d.amount, 0);
+  document.getElementById('pieLegend').innerHTML =
+    data.map((d,i)=>`<span><span class="ldot" style="background:${COLORS[i%COLORS.length]}"></span>${d.name} ${total?Math.round(d.amount/total*100):0}%</span>`).join('');
+  if(pieChart) pieChart.destroy();
+  pieChart = new Chart(document.getElementById('pieChart'),{
     type:'doughnut',
-    data:{labels:data.map(d=>d.name),datasets:[{data:data.map(d=>d.amount),backgroundColor:data.map((_,i)=>COLORS[i%COLORS.length]),borderWidth:0}]},
+    data:{labels:data.map(d=>d.name), datasets:[{data:data.map(d=>d.amount), backgroundColor:data.map((_,i)=>COLORS[i%COLORS.length]), borderWidth:0}]},
     options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw.toLocaleString()} ر.س`}}}}
   });
 }
 
+// رسم الأعمدة (حسب طريقة الدفع)
 function renderBar(f){
-  const monthly=f.filter(s=>s.freq==='monthly').reduce((a,s)=>a+s.amount,0);
-  const quarterly=f.filter(s=>s.freq==='quarterly').reduce((a,s)=>a+s.amount,0);
-  const yearly=f.filter(s=>s.freq==='yearly').reduce((a,s)=>a+s.amount,0);
-  if(barChart)barChart.destroy();
-  barChart=new Chart(document.getElementById('barChart'),{
+  const monthly   = f.filter(s=>s.freq==='monthly').reduce((a,s)=>a+s.amount, 0);
+  const quarterly = f.filter(s=>s.freq==='quarterly').reduce((a,s)=>a+s.amount, 0);
+  const yearly    = f.filter(s=>s.freq==='yearly').reduce((a,s)=>a+s.amount, 0);
+  if(barChart) barChart.destroy();
+  barChart = new Chart(document.getElementById('barChart'),{
     type:'bar',
-    data:{labels:['شهري','ربع سنوي','سنوي'],datasets:[{data:[monthly,quarterly,yearly],backgroundColor:['#1E6FD9','#00C9B1','#FFB347'],borderRadius:6,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw.toLocaleString()} ر.س`}}},
-      scales:{x:{ticks:{color:'#8FA8C8',font:{size:11,family:'Cairo'}},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#8FA8C8',font:{size:11,family:'Cairo'},callback:v=>v.toLocaleString()},grid:{color:'rgba(255,255,255,0.05)'}}}}
+    data:{labels:['شهري','ربع سنوي','سنوي'], datasets:[{data:[monthly,quarterly,yearly], backgroundColor:['#1E6FD9','#00C9B1','#FFB347'], borderRadius:6, borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw.toLocaleString()} ر.س`}}},
+      scales:{
+        x:{ticks:{color:'#8FA8C8',font:{size:11,family:'Cairo'}},grid:{color:'rgba(255,255,255,0.05)'}},
+        y:{ticks:{color:'#8FA8C8',font:{size:11,family:'Cairo'},callback:v=>v.toLocaleString()},grid:{color:'rgba(255,255,255,0.05)'}}
+      }}
   });
 }
 
+// رسم الأعمدة الأفقية (مقارنة التكلفة)
 function renderHbar(f){
-  const data=f.filter(s=>s.amount>0).sort((a,b)=>b.amount-a.amount);
-  const h=Math.max(160,data.length*38+60);
-  document.getElementById('hbarWrap').style.height=h+'px';
-  if(hbarChart)hbarChart.destroy();
-  hbarChart=new Chart(document.getElementById('hbarChart'),{
+  const data = f.filter(s=>s.amount>0).sort((a,b)=>b.amount-a.amount);
+  const h = Math.max(160, data.length*38+60);
+  document.getElementById('hbarWrap').style.height = h+'px';
+  if(hbarChart) hbarChart.destroy();
+  hbarChart = new Chart(document.getElementById('hbarChart'),{
     type:'bar',
-    data:{labels:data.map(s=>s.name),datasets:[{data:data.map(s=>s.amount),backgroundColor:data.map((_,i)=>COLORS[i%COLORS.length]),borderRadius:5,borderSkipped:false}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw.toLocaleString()} ر.س`}}},
-      scales:{x:{ticks:{color:'#8FA8C8',font:{size:11,family:'Cairo'},callback:v=>v.toLocaleString()},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#E8F0FE',font:{size:11,family:'Cairo'}},grid:{display:false}}}}
+    data:{labels:data.map(s=>s.name), datasets:[{data:data.map(s=>s.amount), backgroundColor:data.map((_,i)=>COLORS[i%COLORS.length]), borderRadius:5, borderSkipped:false}]},
+    options:{indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw.toLocaleString()} ر.س`}}},
+      scales:{
+        x:{ticks:{color:'#8FA8C8',font:{size:11,family:'Cairo'},callback:v=>v.toLocaleString()},grid:{color:'rgba(255,255,255,0.05)'}},
+        y:{ticks:{color:'#E8F0FE',font:{size:11,family:'Cairo'}},grid:{display:false}}
+      }}
   });
 }
 
+// ============================================================
+// 7. دالة التحديث الشاملة (تُحدّث كل العناصر)
+// ============================================================
 function refresh(){
-  const f=getFiltered();
-  renderMetrics(f);renderAlerts();renderFilters();
-  renderTable(f);renderPie(f);renderBar(f);renderHbar(f);
+  const f = getFiltered();
+  renderMetrics(f);
+  renderAlerts();
+  renderFilters();
+  renderTable(f);
+  renderPie(f);
+  renderBar(f);
+  renderHbar(f);
 }
-function setStatus(val){activeStatus=val;refresh();}
-function setCompany(val){activeCompany=val;refresh();}
 
+function setStatus(val){ activeStatus = val; refresh(); }
+function setCompany(val){ activeCompany = val; refresh(); }
+
+// ============================================================
+// 8. الحذف
+// ============================================================
 function deleteSub(idx){
-  if(!confirm(`حذف "${subs[idx].name}"؟`))return;
-  subs.splice(idx,1);
+  if(!confirm(`حذف "${subs[idx].name}"؟`)) return;
+  subs.splice(idx, 1);
   saveData();
   refresh();
+  showToast('🗑️ تم الحذف');
 }
 
-function openModal(){
+// ============================================================
+// 9. Modal إضافة نظام جديد
+// ============================================================
+function openAddModal(){
   ['f-name','f-company','f-amount','f-usd','f-end'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('f-freq').value='yearly';
-  document.getElementById('f-status').value='active';
-  document.querySelectorAll('.err').forEach(e=>e.style.display='none');
-  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('f-freq').value   = 'yearly';
+  document.getElementById('f-status').value = 'active';
+  document.querySelectorAll('#addModalOverlay .err').forEach(e=>e.style.display='none');
+  document.getElementById('addModalOverlay').classList.add('open');
 }
-function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
-document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+// للتوافق مع الكود القديم
+function openModal(){ openAddModal(); }
+
+function closeAddModal(){
+  document.getElementById('addModalOverlay').classList.remove('open');
+}
+function closeModal(){ closeAddModal(); }
+
+document.getElementById('addModalOverlay').addEventListener('click', function(e){
+  if(e.target === this) closeAddModal();
+});
 
 function saveSystem(){
-  const name=document.getElementById('f-name').value.trim();
-  const company=document.getElementById('f-company').value.trim();
-  let valid=true;
-  if(!name){document.getElementById('err-name').style.display='block';valid=false;}else document.getElementById('err-name').style.display='none';
-  if(!company){document.getElementById('err-company').style.display='block';valid=false;}else document.getElementById('err-company').style.display='none';
-  if(!valid)return;
+  const name    = document.getElementById('f-name').value.trim();
+  const company = document.getElementById('f-company').value.trim();
+  const amtRaw  = document.getElementById('f-amount').value;
+  const endVal  = document.getElementById('f-end').value.trim();
+  let valid = true;
+
+  // التحقق من الاسم
+  document.getElementById('err-name').style.display = name ? 'none' : 'block';
+  if(!name) valid = false;
+
+  // التحقق من الشركة
+  document.getElementById('err-company').style.display = company ? 'none' : 'block';
+  if(!company) valid = false;
+
+  // التحقق من المبلغ
+  const amt = parseFloat(amtRaw);
+  const amtOk = amtRaw==='' || (!isNaN(amt) && amt >= 0);
+  document.getElementById('err-amount').style.display = amtOk ? 'none' : 'block';
+  if(!amtOk) valid = false;
+
+  // التحقق من التاريخ
+  const dateOk = isValidDate(endVal);
+  document.getElementById('err-end').style.display = dateOk ? 'none' : 'block';
+  if(!dateOk) valid = false;
+
+  if(!valid) return;
+
   subs.push({
-    name, company,
-    freq:document.getElementById('f-freq').value,
-    amount:parseFloat(document.getElementById('f-amount').value)||0,
-    usd:document.getElementById('f-usd').value.trim()||'-',
-    end:document.getElementById('f-end').value.trim()||'-',
-    status:document.getElementById('f-status').value
+    name,
+    company,
+    freq:   document.getElementById('f-freq').value,
+    amount: isNaN(amt) ? 0 : amt,
+    usd:    document.getElementById('f-usd').value.trim() || '-',
+    end:    endVal || '-',
+    status: document.getElementById('f-status').value
   });
-  activeCompany='all';activeStatus='all';
-  closeModal();
+  activeCompany = 'all';
+  activeStatus  = 'all';
+  closeAddModal();
   saveData();
   refresh();
+  showToast('✅ تمت الإضافة بنجاح');
 }
 
-// ✅ تعديل تاريخ الانتهاء بالنقر
-function editDate(i){
+// ============================================================
+// 10. Modal تعديل الاشتراك
+// ============================================================
+function openEditModal(idx){
+  const s = subs[idx];
+  document.getElementById('edit-idx').value     = idx;
+  document.getElementById('edit-name').value    = s.name;
+  document.getElementById('edit-company').value = s.company;
+  document.getElementById('edit-amount').value  = s.amount;
+  document.getElementById('edit-usd').value     = s.usd === '-' ? '' : s.usd;
+  document.getElementById('edit-end').value     = s.end === '-' ? '' : s.end;
+  document.querySelectorAll('#editModalOverlay .err').forEach(e=>e.style.display='none');
+  document.getElementById('editModalOverlay').classList.add('open');
+}
+
+function closeEditModal(){
+  document.getElementById('editModalOverlay').classList.remove('open');
+}
+
+document.getElementById('editModalOverlay').addEventListener('click', function(e){
+  if(e.target === this) closeEditModal();
+});
+
+function saveEdit(){
+  const idx     = parseInt(document.getElementById('edit-idx').value);
+  const company = document.getElementById('edit-company').value.trim();
+  const amtRaw  = document.getElementById('edit-amount').value;
+  const endVal  = document.getElementById('edit-end').value.trim();
+  let valid = true;
+
+  // التحقق من الشركة
+  document.getElementById('err-edit-company').style.display = company ? 'none' : 'block';
+  if(!company) valid = false;
+
+  // التحقق من المبلغ
+  const amt   = parseFloat(amtRaw);
+  const amtOk = amtRaw==='' || (!isNaN(amt) && amt >= 0);
+  document.getElementById('err-edit-amount').style.display = amtOk ? 'none' : 'block';
+  if(!amtOk) valid = false;
+
+  // التحقق من التاريخ
+  const dateOk = isValidDate(endVal);
+  document.getElementById('err-edit-end').style.display = dateOk ? 'none' : 'block';
+  if(!dateOk) valid = false;
+
+  if(!valid) return;
+
+  // تحديث البيانات في المصفوفة الرئيسية
+  subs[idx].company = company;
+  subs[idx].amount  = isNaN(amt) ? subs[idx].amount : amt;
+  subs[idx].usd     = document.getElementById('edit-usd').value.trim() || '-';
+  subs[idx].end     = endVal || '-';
+
+  closeEditModal();
+  saveData();
+  refresh();
+  showToast('✅ تم التعديل وتحديث الداشبورد');
+}
+
+// تعديل التاريخ بالنقر مباشرة على الجدول (سريع)
+function quickEditDate(i){
   const cur = subs[i].end && subs[i].end !== '-' ? subs[i].end : '';
-  const val = prompt('تعديل تاريخ انتهاء: ' + subs[i].name + '\n(مثال: 31/12/2026 أو اتركه فارغاً لإزالة التاريخ)', cur);
+  const val = prompt('تعديل تاريخ انتهاء: ' + subs[i].name + '\n(مثال: 31/12/2026 أو اتركه فارغاً)', cur);
   if(val === null) return;
-  subs[i].end = val.trim() || '-';
+  const trimmed = val.trim();
+  if(trimmed && !isValidDate(trimmed)){ alert('صيغة التاريخ غير صحيحة. استخدم: DD/MM/YYYY'); return; }
+  subs[i].end = trimmed || '-';
   saveData();
   refresh();
+  showToast('✅ تم تحديث التاريخ');
 }
 
+// ============================================================
+// 11. تصدير Excel باستخدام SheetJS
+// ============================================================
+function exportExcel(){
+  const statusMap = { active: 'نشط', stopped: 'متوقف' };
+  const data = subs.map(s => ({
+    'اسم النظام':     s.name,
+    'الشركة':         s.company,
+    'طريقة الدفع':    freqLabel[s.freq] || s.freq,
+    'المبلغ بالريال': s.amount,
+    'المبلغ بالدولار':s.usd,
+    'تاريخ الانتهاء': s.end,
+    'الحالة':         statusMap[s.status] || s.status,
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data, { header: ['اسم النظام','الشركة','طريقة الدفع','المبلغ بالريال','المبلغ بالدولار','تاريخ الانتهاء','الحالة'] });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'الاشتراكات');
+
+  // ضبط عرض الأعمدة
+  ws['!cols'] = [{wch:22},{wch:22},{wch:14},{wch:16},{wch:16},{wch:16},{wch:12}];
+
+  const today = new Date();
+  const dateStr = `${today.getDate()}-${today.getMonth()+1}-${today.getFullYear()}`;
+  XLSX.writeFile(wb, `اشتراكات-${dateStr}.xlsx`);
+  showToast('📊 تم تصدير Excel بنجاح');
+}
+
+// ============================================================
+// 12. تصدير PDF باستخدام jsPDF + AutoTable
+// ============================================================
+function exportPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+  // إضافة خط Cairo (Latin fallback - jsPDF doesn't support Arabic natively without embedding)
+  // سنستخدم reshaping عبر bidi ولكن كحل بسيط نستخدم النص مقلوباً أو نعتمد Latin
+  // الحل العملي: استخدام النص مباشرة مع ضبط الاتجاه
+
+  const today = new Date();
+  const dateStr = `${today.getDate()}/${today.getMonth()+1}/${today.getFullYear()}`;
+
+  // إجماليات
+  const totalYearly  = subs.filter(s=>s.freq==='yearly').reduce((a,s)=>a+s.amount, 0);
+  const totalMonthly = subs.filter(s=>s.freq==='monthly').reduce((a,s)=>a+s.amount, 0);
+  const totalAll     = subs.reduce((a,s)=>a+s.amount, 0);
+  const activeCount  = subs.filter(s=>s.status==='active').length;
+
+  // ألوان
+  const darkBg  = [13, 27, 42];
+  const accent  = [0, 201, 177];
+  const white   = [232, 240, 254];
+
+  // خلفية الصفحة
+  doc.setFillColor(...darkBg);
+  doc.rect(0, 0, 297, 210, 'F');
+
+  // شريط العنوان
+  doc.setFillColor(27, 45, 64);
+  doc.roundedRect(8, 6, 281, 22, 3, 3, 'F');
+
+  doc.setTextColor(...white);
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Subscriptions Dashboard Report', 148.5, 14, { align:'center' });
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(143, 168, 200);
+  doc.text('Loh't Mttba't Al-Ishtiraakat Al-Taqniyya', 148.5, 20, { align:'center' });
+
+  // تاريخ التصدير (بالعربية مع Latin fallback)
+  doc.setTextColor(143, 168, 200);
+  doc.setFontSize(8);
+  doc.text('Export Date: ' + dateStr, 285, 10, { align:'right' });
+
+  // بطاقات الإجمالي
+  const cards = [
+    { label:'Total Systems',    value: subs.length + ' systems',     color:[30,111,217] },
+    { label:'Active Systems',   value: activeCount + ' active',      color:[76,217,123] },
+    { label:'Annual Total',     value: totalYearly.toLocaleString() + ' SAR', color:[255,179,71] },
+    { label:'Monthly Total',    value: totalMonthly.toLocaleString() + ' SAR', color:[0,201,177] },
+  ];
+  cards.forEach((c, i) => {
+    const x = 8 + i * 71;
+    doc.setFillColor(27, 45, 64);
+    doc.roundedRect(x, 32, 68, 18, 2, 2, 'F');
+    doc.setFillColor(...c.color);
+    doc.rect(x, 32, 3, 18, 'F');
+    doc.setTextColor(143, 168, 200);
+    doc.setFontSize(7);
+    doc.text(c.label, x+6, 38);
+    doc.setTextColor(...white);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text(c.value, x+6, 46);
+    doc.setFont('helvetica', 'normal');
+  });
+
+  // جدول الاشتراكات
+  const statusMap = { active:'Active', stopped:'Stopped' };
+  const tableData = subs.map(s => [
+    s.name,
+    s.company,
+    freqLabel[s.freq] || s.freq,
+    s.amount > 0 ? s.amount.toLocaleString() + ' ر.س' : '-',
+    s.usd,
+    s.end,
+    statusMap[s.status] || s.status
+  ]);
+
+  doc.autoTable({
+    startY: 54,
+    head: [['System Name','Company','Frequency','Amount (SAR)','Amount (USD)','Expiry','Status']],
+    body: tableData,
+    theme: 'grid',
+    styles: {
+      font: 'helvetica',
+      fontSize: 8,
+      cellPadding: 3,
+      fillColor: [27, 45, 64],
+      textColor: [232, 240, 254],
+      lineColor: [36, 52, 71],
+      lineWidth: 0.3,
+    },
+    headStyles: {
+      fillColor: [30, 111, 217],
+      textColor: 255,
+      fontStyle: 'bold',
+      fontSize: 8.5,
+    },
+    alternateRowStyles: {
+      fillColor: [20, 34, 52],
+    },
+    columnStyles: {
+      0: { cellWidth: 40 },
+      1: { cellWidth: 45 },
+      2: { cellWidth: 28 },
+      3: { cellWidth: 30 },
+      4: { cellWidth: 28 },
+      5: { cellWidth: 28 },
+      6: { cellWidth: 24 },
+    },
+    margin: { left: 8, right: 8 },
+    didDrawCell: (data) => {
+      if(data.section === 'body' && data.column.index === 6){
+        const status = data.cell.raw;
+        const color  = status === 'Active' ? [76,217,123] : [255,91,91];
+        doc.setTextColor(...color);
+        doc.setFontSize(8);
+        doc.text(status, data.cell.x + data.cell.width/2, data.cell.y + data.cell.height/2 + 1, { align:'center' });
+      }
+    },
+    willDrawCell: (data) => {
+      if(data.section === 'body' && data.column.index === 6){
+        data.cell.text = [''];
+      }
+    }
+  });
+
+  // Footer
+  const finalY = doc.lastAutoTable.finalY || 180;
+  doc.setFillColor(27, 45, 64);
+  doc.rect(8, finalY + 4, 281, 8, 'F');
+  doc.setTextColor(143, 168, 200);
+  doc.setFontSize(7);
+  doc.text('Subscriptions Dashboard — ' + dateStr + ' — Total: ' + totalAll.toLocaleString() + ' SAR', 148.5, finalY + 9.5, { align:'center' });
+
+  const dateFileStr = `${today.getDate()}-${today.getMonth()+1}-${today.getFullYear()}`;
+  doc.save(`subscriptions-report-${dateFileStr}.pdf`);
+  showToast('📄 تم تصدير PDF بنجاح');
+}
+
+// ============================================================
+// 13. تشغيل الداشبورد
+// ============================================================
 refresh();
 </script>
 </body>
