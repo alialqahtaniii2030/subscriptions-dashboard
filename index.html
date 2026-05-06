@@ -8,206 +8,264 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-  try {
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    onSnapshot(collection(db, "subscriptions"), (snapshot) => {
-      if (!snapshot.empty) {
-        window._subs = snapshot.docs.map(doc => {
-          const d = doc.data();
-          return { id: doc.id, name: d.systemName||"", company: d.company||"", freq: d.paymentMethod||"yearly", amount: Number(d.amountSar)||0, usd: d.amountUsd||"-", end: d.expiryDate||"-", status: d.status||"active" };
-        });
-        if (window._refresh) window._refresh();
-      }
-    }, err => console.warn("Firestore error:", err));
-  } catch(e) { console.warn("Firebase init error:", e); }
-</script>
 <style>
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap");
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0D1B2A;--card:#112240;--accent:#1E6FD9;--accent2:#00C9B1;--green:#4CD97B;--red:#FF5B5B;--orange:#FFB347;--muted:#8FA8C8;--text:#E8F0FE;--border:rgba(255,255,255,0.07);}
-body{font-family:"Cairo",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px}
-.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px}
-.header-title{font-size:clamp(18px,3vw,26px);font-weight:700}
-.header-sub{color:var(--muted);font-size:13px;margin-top:4px}
-.admin-btn{background:linear-gradient(135deg,#1E6FD9,#00C9B1);color:#fff;border:none;padding:10px 22px;border-radius:10px;font-family:"Cairo",sans-serif;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 15px rgba(30,111,217,0.4);transition:all .3s}
-.admin-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,111,217,0.6)}
-.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px}
-.metric{background:var(--card);border-radius:14px;padding:20px;border:1px solid var(--border);position:relative;overflow:hidden}
-.metric::before{content:"";position:absolute;top:0;left:0;right:0;height:3px}
-.m-blue::before{background:var(--accent)}.m-green::before{background:var(--green)}.m-accent::before{background:var(--accent2)}.m-orange::before{background:var(--orange)}
-.metric-icon{font-size:28px;margin-bottom:8px}.metric-value{font-size:32px;font-weight:700}.metric-label{color:var(--muted);font-size:13px;margin-top:4px}.metric-sub{color:var(--muted);font-size:12px;margin-top:2px}
-.alerts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:20px}
-.alert-card{background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--border)}
-.alert-card.a-warn{border-right:3px solid var(--orange)}.alert-card.a-red{border-right:3px solid var(--red)}.alert-card.a-teal{border-right:3px solid var(--accent2)}
-.alert-title{font-weight:700;margin-bottom:6px;font-size:14px}.alert-body{color:var(--muted);font-size:13px;line-height:1.6}
-.filters-section{background:var(--card);border-radius:12px;padding:16px;margin-bottom:20px;border:1px solid var(--border)}
-.filter-label{color:var(--muted);font-size:12px;margin-bottom:8px}
-.filter-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}.filter-row:last-child{margin-bottom:0}
-.fbtn{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:20px;cursor:pointer;font-family:"Cairo",sans-serif;font-size:13px;transition:all .2s}
-.fbtn:hover{background:rgba(30,111,217,0.2);border-color:var(--accent)}
-.fs-active,.fc-active{background:var(--accent)!important;border-color:var(--accent)!important;color:#fff!important}
-.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
-@media(max-width:768px){.charts-row{grid-template-columns:1fr}}
-.chart-card{background:var(--card);border-radius:14px;padding:20px;border:1px solid var(--border)}
-.chart-title{font-size:15px;font-weight:700;margin-bottom:14px;color:var(--text)}
-.pie-wrap{height:220px;position:relative}.pie-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.pie-legend span{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
-.ldot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
-.bar-wrap{height:200px}.hbar-card{background:var(--card);border-radius:14px;padding:20px;border:1px solid var(--border);margin-bottom:20px}.hbar-wrap{position:relative}
-.table-card{background:var(--card);border-radius:14px;padding:20px;border:1px solid var(--border);margin-bottom:20px;overflow-x:auto}
-.table-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.results-count{color:var(--muted);font-size:13px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th{color:var(--muted);font-weight:600;padding:10px 12px;border-bottom:1px solid var(--border);text-align:right;font-size:13px}
-td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04)}tr:hover td{background:rgba(255,255,255,0.03)}
-.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600}
-.b-active{background:rgba(76,217,123,0.15);color:#4CD97B}.b-stopped{background:rgba(255,91,91,0.15);color:#FF5B5B}
-.b-yearly{background:rgba(30,111,217,0.15);color:#1E6FD9}.b-monthly{background:rgba(255,179,71,0.15);color:#FFB347}.b-quarterly{background:rgba(0,201,177,0.15);color:#00C9B1}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#0f172a;color:#e2e8f0;direction:rtl}
+.header{background:linear-gradient(135deg,#1e293b,#0f172a);padding:20px 30px;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.header-title{font-size:1.5rem;font-weight:700;color:#38bdf8}
+.header-sub{font-size:.8rem;color:#94a3b8;margin-top:4px}
+.admin-btn{background:linear-gradient(135deg,#38bdf8,#0ea5e9);color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:600;text-decoration:none;display:inline-block;transition:opacity .2s}
+.admin-btn:hover{opacity:.85}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155;text-align:center}
+.stat-value{font-size:2rem;font-weight:700;color:#38bdf8}
+.stat-label{font-size:.85rem;color:#94a3b8;margin-top:6px}
+.stat-sub{font-size:.75rem;color:#64748b;margin-top:2px}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.chart-card{background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155}
+.chart-title{font-size:1rem;font-weight:600;color:#e2e8f0;margin-bottom:16px;text-align:center}
+.chart-container{position:relative;height:260px}
+.filters{background:#1e293b;border-radius:12px;padding:16px 20px;border:1px solid #334155;margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.filter-label{font-size:.85rem;color:#94a3b8}
+.filter-btn{background:#334155;border:1px solid #475569;color:#cbd5e1;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.8rem;transition:all .2s}
+.filter-btn.active,.filter-btn:hover{background:#38bdf8;border-color:#38bdf8;color:#fff}
+.table-card{background:#1e293b;border-radius:12px;border:1px solid #334155;overflow:hidden;margin-bottom:24px}
+.table-header{padding:16px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #334155}
+.table-title{font-size:1rem;font-weight:600}
+.table-count{font-size:.8rem;color:#94a3b8}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{background:#0f172a;padding:12px 16px;text-align:right;font-size:.8rem;color:#94a3b8;font-weight:600;white-space:nowrap}
+td{padding:12px 16px;border-bottom:1px solid #1e293b;font-size:.85rem;white-space:nowrap}
+tr:hover td{background:#243347}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:.75rem;font-weight:600}
+.badge-active{background:#064e3b;color:#34d399}
+.badge-stopped{background:#450a0a;color:#f87171}
+.badge-yearly{background:#1e3a5f;color:#60a5fa}
+.badge-monthly{background:#3b1f6e;color:#a78bfa}
+.badge-quarterly{background:#3b2a0a;color:#fbbf24}
+.loading{text-align:center;padding:40px;color:#94a3b8}
+.empty{text-align:center;padding:40px;color:#64748b;font-size:.9rem}
+.bar-chart-card{background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155;margin-bottom:24px}
+.bar-chart-title{font-size:1rem;font-weight:600;color:#e2e8f0;margin-bottom:16px;text-align:center}
+.bar-item{display:flex;align-items:center;margin-bottom:10px;gap:10px}
+.bar-name{font-size:.8rem;color:#cbd5e1;width:180px;text-align:right;flex-shrink:0;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;background:#0f172a;border-radius:4px;height:18px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .5s}
+.bar-val{font-size:.75rem;color:#94a3b8;width:70px;text-align:left;flex-shrink:0}
+@media(max-width:768px){.charts-row{grid-template-columns:1fr}.bar-name{width:120px}}
 </style>
 </head>
 <body>
 <div class="header">
-  <div><div class="header-title">لوحة متابعة الاشتراكات التقنية</div><div class="header-sub">آخر تحديث: مايو 2026</div></div>
+  <div>
+    <div class="header-title">لوحة متابعة الاشتراكات التقنية</div>
+    <div class="header-sub" id="lastUpdate">آخر تحديث: —</div>
+  </div>
   <a href="admin.html" class="admin-btn">🔐 دخول الأدمن</a>
 </div>
-<div class="metrics" id="metrics"></div>
-<div class="alerts" id="alerts"></div>
-<div class="filters-section">
-  <div class="filter-label">الحالة / طريقة الدفع</div><div class="filter-row" id="statusFilters"></div>
-  <div class="filter-label">الشركة</div><div class="filter-row" id="companyFilters"></div>
+<div class="container">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-value" id="sTotalSystems">—</div><div class="stat-label">إجمالي الأنظمة</div><div class="stat-sub" id="sSystemsSub"></div></div>
+    <div class="stat-card"><div class="stat-value" id="sActive">—</div><div class="stat-label">الأنظمة النشطة</div><div class="stat-sub" id="sActiveSub"></div></div>
+    <div class="stat-card"><div class="stat-value" id="sYearlySar">—</div><div class="stat-label">الإجمالي السنوي</div><div class="stat-sub">ريال سعودي</div></div>
+    <div class="stat-card"><div class="stat-value" id="sMonthlySar">—</div><div class="stat-label">الإجمالي الشهري</div><div class="stat-sub">ريال سعودي</div></div>
+  </div>
+  <div class="charts-row">
+    <div class="chart-card"><div class="chart-title">الإجمالي حسب طريقة الدفع</div><div class="chart-container"><canvas id="payChart"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">توزيع التكلفة</div><div class="chart-container"><canvas id="costChart"></canvas></div></div>
+  </div>
+  <div class="bar-chart-card">
+    <div class="bar-chart-title">تكلفة كل نظام (ريال سعودي)</div>
+    <div id="barChart"></div>
+  </div>
+  <div class="filters">
+    <span class="filter-label">الشركة:</span>
+    <div id="companyFilters"></div>
+    <span class="filter-label" style="margin-right:16px">طريقة الدفع / الحالة:</span>
+    <div id="statusFilters"></div>
+  </div>
+  <div class="table-card">
+    <div class="table-header">
+      <span class="table-title">جميع الاشتراكات</span>
+      <span class="table-count" id="tableCount"></span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>النظام</th><th>الشركة</th><th>الدفع</th><th>المبلغ (ر.س)</th><th>بالدولار</th><th>الانتهاء</th><th>الحالة</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"><tr><td colspan="7" class="loading">جاري تحميل البيانات...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
 </div>
-<div class="charts-row">
-  <div class="chart-card"><div class="chart-title">توزيع التكلفة</div><div class="pie-wrap"><canvas id="pieChart"></canvas></div><div class="pie-legend" id="pieLegend"></div></div>
-  <div class="chart-card"><div class="chart-title">الإجمالي حسب طريقة الدفع</div><div class="bar-wrap"><canvas id="barChart"></canvas></div></div>
-</div>
-<div class="hbar-card"><div class="chart-title">مقارنة تكلفة الأنظمة (ر.س)</div><div class="hbar-wrap" id="hbarWrap"><canvas id="hbarChart"></canvas></div></div>
-<div class="table-card">
-  <div class="table-header"><div class="chart-title" style="margin:0">جميع الاشتراكات</div><div class="results-count" id="resultsCount"></div></div>
-  <table><thead><tr><th>النظام</th><th>الشركة</th><th>الدفع</th><th>المبلغ (ر.س)</th><th>بالدولار</th><th>الانتهاء</th><th>الحالة</th></tr></thead><tbody id="tableBody"></tbody></table>
-</div>
-<script>
-window._defaultSubs=[
-  {name:"Hostegitor",company:"دي باور",freq:"yearly",amount:1435,usd:"382.67$",end:"04/11/2026",status:"active"},
-  {name:"ادارتك",company:"دي باور",freq:"quarterly",amount:6,usd:"-",end:"-",status:"active"},
-  {name:"Wazab",company:"دي باور",freq:"monthly",amount:270,usd:"72$",end:"16/09/2025",status:"active"},
-  {name:"Wazab",company:"دي باور",freq:"monthly",amount:270,usd:"72$",end:"20/12/2025",status:"stopped"},
-  {name:"سند بلس",company:"هيكل العربية",freq:"monthly",amount:0,usd:"-",end:"01/12/2025",status:"stopped"},
-  {name:"وات مي آر ام للواتساب",company:"هيكل العربية",freq:"monthly",amount:169,usd:"45$",end:"24/12/2025",status:"active"},
-  {name:"وات مي آر ام للواتساب",company:"دي باور",freq:"monthly",amount:0,usd:"-",end:"16/03/2026",status:"stopped"},
-  {name:"WHATCRM",company:"سيفتي سايد",freq:"monthly",amount:75,usd:"20$",end:"16/03/2026",status:"active"},
-  {name:"WHATCRM",company:"الخطوط المتتالية",freq:"monthly",amount:0,usd:"-",end:"-",status:"active"},
-  {name:"WHATCRM",company:"هيدروتيك",freq:"monthly",amount:0,usd:"-",end:"25/12/2025",status:"stopped"},
-  {name:"dafater",company:"دي باور",freq:"yearly",amount:13180,usd:"7,880$",end:"15/12/2025",status:"active"},
-  {name:"dafater ERP",company:"دي باور",freq:"yearly",amount:4554,usd:"-",end:"12/03/2026",status:"active"},
-  {name:"bitrix24",company:"دي باور",freq:"quarterly",amount:2250,usd:"600$",end:"04/05/2026",status:"active"},
-  {name:"Odoo",company:"دي باور",freq:"yearly",amount:6888,usd:"1,836$",end:"06/08/2026",status:"active"},
-  {name:"Odoo server",company:"دي باور",freq:"monthly",amount:28,usd:"7.60$",end:"14/08/2025",status:"active"},
-  {name:"Domain",company:"الخطوط المتتالية",freq:"yearly",amount:99,usd:"-",end:"27/08/2026",status:"active"},
-  {name:"Domain",company:"سيفتي سايد",freq:"yearly",amount:99,usd:"-",end:"18/04/2025",status:"active"},
-  {name:"Domain",company:"دي باور",freq:"yearly",amount:99,usd:"-",end:"30/12/2025",status:"active"},
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB66_vHpnFqzWCufDCBX1rGnhSrndmoL7U",
+  authDomain: "subscriptions-dashboard-13ee7.firebaseapp.com",
+  projectId: "subscriptions-dashboard-13ee7",
+  storageBucket: "subscriptions-dashboard-13ee7.firebasestorage.app",
+  messagingSenderId: "35509563188",
+  appId: "1:35509563188:web:557dc4d702bc6aa64f7f61",
+  databaseURL: "https://subscriptions-dashboard-13ee7-default-rtdb.firebaseio.com"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const DEFAULT_SUBS = [
+  {systemName:"Hostegitor",company:"دي باور",paymentMethod:"yearly",amountSar:1435,amountUsd:"382.67$",expiryDate:"2026-11-04",status:"active"},
+  {systemName:"ادارتك",company:"دي باور",paymentMethod:"monthly",amountSar:6,amountUsd:"-",expiryDate:"",status:"active"},
+  {systemName:"Wazab",company:"دي باور",paymentMethod:"monthly",amountSar:270,amountUsd:"72$",expiryDate:"2025-09-16",status:"active"},
+  {systemName:"Wazab",company:"دي باور",paymentMethod:"monthly",amountSar:270,amountUsd:"72$",expiryDate:"2025-12-20",status:"stopped"},
+  {systemName:"سند بلس",company:"هيكل العربية",paymentMethod:"monthly",amountSar:0,amountUsd:"-",expiryDate:"2025-12-01",status:"stopped"},
+  {systemName:"سند بلس",company:"هيكل العربية",paymentMethod:"monthly",amountSar:169,amountUsd:"45$",expiryDate:"2025-12-24",status:"active"},
+  {systemName:"وات مي آر ام للواتساب",company:"دي باور",paymentMethod:"monthly",amountSar:0,amountUsd:"-",expiryDate:"2025-03-16",status:"stopped"},
+  {systemName:"WHATCRM",company:"سيفتي سايد",paymentMethod:"monthly",amountSar:75,amountUsd:"20$",expiryDate:"2026-03-16",status:"active"},
+  {systemName:"WHATCRM",company:"الخطوط المتتالية",paymentMethod:"monthly",amountSar:0,amountUsd:"-",expiryDate:"",status:"active"},
+  {systemName:"WHATCRM",company:"هيدروتيك",paymentMethod:"monthly",amountSar:0,amountUsd:"-",expiryDate:"2025-12-25",status:"stopped"},
+  {systemName:"dafater",company:"دي باور",paymentMethod:"yearly",amountSar:13180,amountUsd:"7880$",expiryDate:"2025-12-15",status:"active"},
+  {systemName:"dafater ERP",company:"دي باور",paymentMethod:"yearly",amountSar:4554,amountUsd:"-",expiryDate:"2026-03-12",status:"active"},
+  {systemName:"bitrix24",company:"دي باور",paymentMethod:"quarterly",amountSar:2250,amountUsd:"600$",expiryDate:"2026-05-04",status:"active"},
+  {systemName:"Odoo",company:"دي باور",paymentMethod:"yearly",amountSar:6888,amountUsd:"1836$",expiryDate:"2026-08-06",status:"active"},
+  {systemName:"Odoo server",company:"دي باور",paymentMethod:"monthly",amountSar:28,amountUsd:"7.60$",expiryDate:"2025-08-14",status:"active"},
+  {systemName:"Domain",company:"الخطوط المتتالية",paymentMethod:"yearly",amountSar:99,amountUsd:"-",expiryDate:"2026-08-27",status:"active"},
+  {systemName:"Domain",company:"سيفتي سايد",paymentMethod:"yearly",amountSar:99,amountUsd:"-",expiryDate:"2025-04-18",status:"active"},
+  {systemName:"Domain",company:"دي باور",paymentMethod:"yearly",amountSar:99,amountUsd:"-",expiryDate:"2025-12-30",status:"active"}
 ];
-window._subs=window._defaultSubs.slice();
-var COLORS=["#1E6FD9","#00C9B1","#FFB347","#4CD97B","#FF5B5B","#7B61FF","#2E8AF6","#FF8C42","#00E5CC","#A8FF78"];
-var freqLabel={monthly:"شهري",quarterly:"ربع سنوي",yearly:"سنوي"};
-var freqBadge={monthly:"b-monthly",quarterly:"b-quarterly",yearly:"b-yearly"};
-var activeStatus="all",activeCompany="all",pieChart,barChart,hbarChart;
-function getFiltered(){return window._subs.filter(function(s){var sOk=activeStatus==="all"||s.status===activeStatus||s.freq===activeStatus;var cOk=activeCompany==="all"||s.company===activeCompany;return sOk&&cOk;});}
-function renderMetrics(f){
-  var active=f.filter(function(s){return s.status==="active";}).length;
-  var stopped=f.filter(function(s){return s.status==="stopped";}).length;
-  var yearly=f.filter(function(s){return s.freq==="yearly";}).reduce(function(a,s){return a+s.amount;},0);
-  var monthly=f.filter(function(s){return s.freq==="monthly";}).reduce(function(a,s){return a+s.amount;},0);
-  document.getElementById("metrics").innerHTML=
-    '<div class="metric m-blue"><div class="metric-icon">📦</div><div class="metric-value">'+f.length+'</div><div class="metric-label">إجمالي الأنظمة</div><div class="metric-sub">من أصل '+window._subs.length+'</div></div>'
-    +'<div class="metric m-green"><div class="metric-icon">✅</div><div class="metric-value" style="color:var(--green)">'+active+'</div><div class="metric-label">الأنظمة النشطة</div><div class="metric-sub">'+stopped+' متوقفة</div></div>'
-    +'<div class="metric m-accent"><div class="metric-icon">📅</div><div class="metric-value" style="color:var(--accent2)">'+yearly.toLocaleString()+'</div><div class="metric-label">الإجمالي السنوي</div><div class="metric-sub">ريال سعودي</div></div>'
-    +'<div class="metric m-orange"><div class="metric-icon">📆</div><div class="metric-value">'+monthly.toLocaleString()+'</div><div class="metric-label">الإجمالي الشهري</div><div class="metric-sub">ريال سعودي</div></div>';
+
+let allSubs = [];
+let activeFilter = 'all';
+let activeCompany = 'all';
+let payChartInst = null, costChartInst = null;
+
+function fmt(n){return Number(n||0).toLocaleString('ar-SA');}
+function getFreqLabel(f){return f==='yearly'?'سنوي':f==='monthly'?'شهري':f==='quarterly'?'ربع سنوي':f||'';}
+function getFreqBadge(f){return f==='yearly'?'badge-yearly':f==='monthly'?'badge-monthly':'badge-quarterly';}
+function fmtDate(d){if(!d)return'-';const p=d.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:d;}
+
+function renderAll(data) {
+  allSubs = data;
+  renderStats(data);
+  renderCharts(data);
+  renderBarChart(data);
+  renderFilters(data);
+  renderTable(data);
+  document.getElementById('lastUpdate').textContent = 'آخر تحديث: ' + new Date().toLocaleString('ar-SA');
 }
-function renderAlerts(){
-  var subs=window._subs;var stopped=subs.filter(function(s){return s.status==="stopped";});
-  var byCompany={};subs.forEach(function(s){byCompany[s.company]=(byCompany[s.company]||0)+s.amount;});
-  var topCo=Object.entries(byCompany).sort(function(a,b){return b[1]-a[1];})[0]||["—",0];
-  var today=new Date();
-  var upcoming=subs.filter(function(s){return s.end&&s.end!=="-";}).map(function(s){
-    var p=s.end.split("/");return{name:s.name,date:new Date(p[2]+"-"+p[1]+"-"+p[0]),dateStr:s.end};
-  }).filter(function(s){return s.date>today;}).sort(function(a,b){return a.date-b.date;}).slice(0,2);
-  var upHTML=upcoming.length?upcoming.map(function(u){return u.name+" — "+u.dateStr;}).join("<br>"):"لا توجد تجديدات قادمة";
-  document.getElementById("alerts").innerHTML=
-    '<div class="alert-card a-warn"><div class="alert-title">⏰ تجديد قادم</div><div class="alert-body">'+upHTML+'</div></div>'
-    +'<div class="alert-card a-red"><div class="alert-title">❌ أنظمة متوقفة ('+stopped.length+')</div><div class="alert-body">'+( stopped.map(function(s){return s.name;}).join("<br>")||"لا توجد")+'</div></div>'
-    +'<div class="alert-card a-teal"><div class="alert-title">🏆 أعلى شركة تكلفةً</div><div class="alert-body">'+topCo[0]+"<br><strong>"+topCo[1].toLocaleString()+" ر.س</strong></div></div>";
+
+function renderStats(data) {
+  const total = data.length;
+  const active = data.filter(s=>s.status==='active').length;
+  const stopped = data.filter(s=>s.status==='stopped').length;
+  let yearlyTotal = 0, monthlyTotal = 0;
+  data.forEach(s => {
+    const a = Number(s.amountSar)||0;
+    if(s.paymentMethod==='yearly') yearlyTotal += a;
+    else if(s.paymentMethod==='monthly') monthlyTotal += a * 12;
+    else if(s.paymentMethod==='quarterly') monthlyTotal += a * 4;
+  });
+  document.getElementById('sTotalSystems').textContent = total;
+  document.getElementById('sSystemsSub').textContent = 'من أصل ' + total;
+  document.getElementById('sActive').textContent = active;
+  document.getElementById('sActiveSub').textContent = stopped + ' متوقفة';
+  document.getElementById('sYearlySar').textContent = fmt(yearlyTotal);
+  document.getElementById('sMonthlySar').textContent = fmt(Math.round(monthlyTotal / 12));
 }
-function renderFilters(){
-  var subs=window._subs;
-  var opts=[{val:"all",label:"الكل"},{val:"active",label:"النشطة"},{val:"stopped",label:"المتوقفة"},{val:"yearly",label:"سنوي"},{val:"monthly",label:"شهري"},{val:"quarterly",label:"ربع سنوي"}];
-  document.getElementById("statusFilters").innerHTML=opts.map(function(o){return '<button class="fbtn'+(activeStatus===o.val?" fs-active":"")+'" onclick="setStatus(\"'+o.val+'\")">'+ o.label+"</button>";}).join("");
-  var companies=["all"].concat(Array.from(new Set(subs.map(function(s){return s.company;}))).sort());
-  document.getElementById("companyFilters").innerHTML=companies.map(function(c){
-    var label=c==="all"?"الكل":c;var count=c==="all"?subs.length:subs.filter(function(s){return s.company===c;}).length;
-    return '<button class="fbtn'+(activeCompany===c?" fc-active":"")+'" onclick="setCompany(\"'+c+'\")">'+ label+" ("+count+")</button>";
-  }).join("");
-}
-function renderTable(f){
-  document.getElementById("resultsCount").textContent=f.length+" نتيجة من أصل "+window._subs.length;
-  document.getElementById("tableBody").innerHTML=f.length===0
-    ?'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">لا توجد نتائج</td></tr>'
-    :f.map(function(s){
-      return '<tr><td style="font-weight:600">'+s.name+'</td><td style="color:var(--muted)">'+s.company+'</td>'
-        +'<td><span class="badge '+(freqBadge[s.freq]||"b-yearly")+'">'+( freqLabel[s.freq]||s.freq)+'</span></td>'
-        +'<td style="font-weight:500">'+(s.amount>0?s.amount.toLocaleString():"—")+'</td>'
-        +'<td style="color:var(--muted)">'+s.usd+'</td><td style="color:var(--muted)">'+( s.end||"-")+'</td>'
-        +'<td><span class="badge '+(s.status==="active"?"b-active":"b-stopped")+'">'+( s.status==="active"?"نشط":"متوقف")+"</span></td></tr>";
-    }).join("");
-}
-function renderPie(f){
-  var data=f.filter(function(s){return s.amount>0;}).sort(function(a,b){return b.amount-a.amount;}).slice(0,8);
-  var total=data.reduce(function(s,d){return s+d.amount;},0);
-  document.getElementById("pieLegend").innerHTML=data.map(function(d,i){
-    return '<span><span class="ldot" style="background:'+COLORS[i%COLORS.length]+'"></span>'+d.name+" "+(total?Math.round(d.amount/total*100):0)+"%</span>";
-  }).join("");
-  if(pieChart)pieChart.destroy();
-  pieChart=new Chart(document.getElementById("pieChart"),{type:"doughnut",
-    data:{labels:data.map(function(d){return d.name;}),datasets:[{data:data.map(function(d){return d.amount;}),backgroundColor:data.map(function(_,i){return COLORS[i%COLORS.length];}),borderWidth:0}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return " "+ctx.label+": "+ctx.raw.toLocaleString()+" ر.س";}}}}}
+
+function renderCharts(data) {
+  const payGroups = {};
+  const costGroups = {};
+  data.forEach(s => {
+    const a = Number(s.amountSar)||0;
+    const freq = getFreqLabel(s.paymentMethod);
+    payGroups[freq] = (payGroups[freq]||0) + a;
+    if(a > 0) costGroups[s.systemName] = (costGroups[s.systemName]||0) + a;
+  });
+  const colors = ['#38bdf8','#818cf8','#34d399','#fb923c','#f472b6','#a78bfa','#fbbf24','#60a5fa'];
+  if(payChartInst) payChartInst.destroy();
+  const pCtx = document.getElementById('payChart').getContext('2d');
+  payChartInst = new Chart(pCtx, {
+    type:'bar',
+    data:{labels:Object.keys(payGroups),datasets:[{data:Object.values(payGroups),backgroundColor:colors,borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#94a3b8'}},y:{ticks:{color:'#94a3b8'},grid:{color:'#1e293b'}}}}
+  });
+  if(costChartInst) costChartInst.destroy();
+  const cCtx = document.getElementById('costChart').getContext('2d');
+  const cLabels = Object.keys(costGroups).slice(0,8);
+  const cVals = cLabels.map(k=>costGroups[k]);
+  costChartInst = new Chart(cCtx, {
+    type:'doughnut',
+    data:{labels:cLabels,datasets:[{data:cVals,backgroundColor:colors,borderWidth:2,borderColor:'#0f172a'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',boxWidth:12,font:{size:10}}}}}
   });
 }
-function renderBar(f){
-  var m=f.filter(function(s){return s.freq==="monthly";}).reduce(function(a,s){return a+s.amount;},0);
-  var q=f.filter(function(s){return s.freq==="quarterly";}).reduce(function(a,s){return a+s.amount;},0);
-  var y=f.filter(function(s){return s.freq==="yearly";}).reduce(function(a,s){return a+s.amount;},0);
-  if(barChart)barChart.destroy();
-  barChart=new Chart(document.getElementById("barChart"),{type:"bar",
-    data:{labels:["شهري","ربع سنوي","سنوي"],datasets:[{data:[m,q,y],backgroundColor:["#1E6FD9","#00C9B1","#FFB347"],borderRadius:6,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return " "+ctx.raw.toLocaleString()+" ر.س";}}}},
-      scales:{x:{ticks:{color:"#8FA8C8",font:{size:11,family:"Cairo"}},grid:{color:"rgba(255,255,255,0.05)"}},y:{ticks:{color:"#8FA8C8",font:{size:11,family:"Cairo"},callback:function(v){return v.toLocaleString();}},grid:{color:"rgba(255,255,255,0.05)"}}}}
+
+function renderBarChart(data) {
+  const groups = {};
+  data.forEach(s => { const a=Number(s.amountSar)||0; if(a>0) groups[s.systemName]=(groups[s.systemName]||0)+a; });
+  const sorted = Object.entries(groups).sort((a,b)=>b[1]-a[1]);
+  const max = sorted.length ? sorted[0][1] : 1;
+  const colors = ['#38bdf8','#818cf8','#34d399','#fb923c','#f472b6','#a78bfa','#fbbf24','#60a5fa'];
+  let html = '';
+  sorted.forEach(([name,val],i) => {
+    const pct = Math.round(val/max*100);
+    html += '<div class="bar-item"><div class="bar-name">'+name+'</div><div class="bar-track"><div class="bar-fill" style="width:'+pct+'%;background:'+colors[i%colors.length]+'"></div></div><div class="bar-val">'+fmt(val)+'</div></div>';
   });
+  document.getElementById('barChart').innerHTML = html || '<div class="empty">لا توجد بيانات</div>';
 }
-function renderHbar(f){
-  var data=f.filter(function(s){return s.amount>0;}).sort(function(a,b){return b.amount-a.amount;});
-  document.getElementById("hbarWrap").style.height=Math.max(160,data.length*38+60)+"px";
-  if(hbarChart)hbarChart.destroy();
-  hbarChart=new Chart(document.getElementById("hbarChart"),{type:"bar",
-    data:{labels:data.map(function(s){return s.name;}),datasets:[{data:data.map(function(s){return s.amount;}),backgroundColor:data.map(function(_,i){return COLORS[i%COLORS.length];}),borderRadius:5,borderSkipped:false}]},
-    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return " "+ctx.raw.toLocaleString()+" ر.س";}}}},
-      scales:{x:{ticks:{color:"#8FA8C8",font:{size:11,family:"Cairo"},callback:function(v){return v.toLocaleString();}},grid:{color:"rgba(255,255,255,0.05)"}},y:{ticks:{color:"#E8F0FE",font:{size:11,family:"Cairo"}},grid:{display:false}}}}
+
+function renderFilters(data) {
+  const companies = ['all',...new Set(data.map(s=>s.company).filter(Boolean))];
+  const cf = document.getElementById('companyFilters');
+  cf.innerHTML = companies.map(c => '<button class="filter-btn'+(activeCompany===c?' active':'')+ '" onclick="window._setCompany(''+c+'')">'+( c==='all'?'الكل ('+data.length+')':c+' ('+data.filter(s=>s.company===c).length+')' )+'</button>').join('');
+  const sf = document.getElementById('statusFilters');
+  const statuses = [{k:'all',l:'الكل'},{k:'active',l:'النشطة'},{k:'stopped',l:'المتوقفة'},{k:'yearly',l:'سنوي'},{k:'monthly',l:'شهري'},{k:'quarterly',l:'ربع سنوي'}];
+  sf.innerHTML = statuses.map(s=>'<button class="filter-btn'+(activeFilter===s.k?' active':'')+'" onclick="window._setFilter(''+s.k+'')">'+s.l+'</button>').join('');
+}
+
+function renderTable(data) {
+  let filtered = data;
+  if(activeCompany !== 'all') filtered = filtered.filter(s=>s.company===activeCompany);
+  if(activeFilter === 'active') filtered = filtered.filter(s=>s.status==='active');
+  else if(activeFilter === 'stopped') filtered = filtered.filter(s=>s.status==='stopped');
+  else if(['yearly','monthly','quarterly'].includes(activeFilter)) filtered = filtered.filter(s=>s.paymentMethod===activeFilter);
+  document.getElementById('tableCount').textContent = filtered.length + ' نتيجة من أصل ' + data.length;
+  if(!filtered.length){document.getElementById('tableBody').innerHTML='<tr><td colspan="7" class="empty">لا توجد بيانات</td></tr>';return;}
+  let html = '';
+  filtered.forEach(s => {
+    html += '<tr><td><strong>'+s.systemName+'</strong></td><td>'+s.company+'</td>';
+    html += '<td><span class="badge '+getFreqBadge(s.paymentMethod)+'">'+getFreqLabel(s.paymentMethod)+'</span></td>';
+    html += '<td>'+fmt(s.amountSar)+'</td><td>'+(s.amountUsd||'-')+'</td>';
+    html += '<td>'+fmtDate(s.expiryDate)+'</td>';
+    html += '<td><span class="badge '+(s.status==='active'?'badge-active':'badge-stopped')+'">'+(s.status==='active'?'نشط':'متوقف')+'</span></td></tr>';
   });
+  document.getElementById('tableBody').innerHTML = html;
 }
-window._refresh=function(){var f=getFiltered();renderMetrics(f);renderAlerts();renderFilters();renderTable(f);renderPie(f);renderBar(f);renderHbar(f);};
-function setStatus(v){activeStatus=v;window._refresh();}
-function setCompany(v){activeCompany=v;window._refresh();}
-window._refresh();
+
+window._setFilter = function(f){activeFilter=f;renderFilters(allSubs);renderTable(allSubs);};
+window._setCompany = function(c){activeCompany=c;renderFilters(allSubs);renderTable(allSubs);};
+
+const dbRef = ref(db, 'subscriptions');
+onValue(dbRef, (snapshot) => {
+  const val = snapshot.val();
+  if(val) {
+    const arr = Object.entries(val).map(([id,d])=>({id,...d}));
+    renderAll(arr);
+  } else {
+    renderAll(DEFAULT_SUBS);
+  }
+}, (err) => {
+  console.warn('Firebase error, using default data:', err);
+  renderAll(DEFAULT_SUBS);
+});
 </script>
 </body>
 </html>
