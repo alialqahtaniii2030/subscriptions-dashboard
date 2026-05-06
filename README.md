@@ -4,7 +4,7 @@
 
 ## الرابط المباشر
 بعد التفعيل: `https://YOUR-USERNAME.github.io/YOUR-REPO-NAME`
-
+رابط قاعدة البيانات : https://console.firebase.google.com/u/0/
 ## المميزات
 - متابعة جميع الأنظمة والاشتراكات
 - فلترة حسب الحالة والشركة وطريقة الدفع
@@ -14,3 +14,5 @@
 
 LINLK : 
 https://alialqahtaniii2030.github.io/subscriptions-dashboard/
+
+
