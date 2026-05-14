@@ -54,6 +54,9 @@ tr:hover td{background:#1a2640}
 .b-yearly{background:#1e3a5f;color:#60a5fa}
 .b-monthly{background:#3b1f6e;color:#a78bfa}
 .b-quarterly{background:#3b2a0a;color:#fbbf24}
+.b-days-red{background:#450a0a;color:#f87171}
+.b-days-yellow{background:#3b2a0a;color:#fbbf24}
+.b-days-green{background:#064e3b;color:#34d399}
 .empty-msg{text-align:center;padding:48px;color:#64748b;font-size:.9rem}
 .loading-msg{text-align:center;padding:48px;color:#94a3b8;font-size:.88rem}
 @media(max-width:760px){.charts-grid{grid-template-columns:1fr}.bar-name{width:120px}}
@@ -93,8 +96,8 @@ tr:hover td{background:#1a2640}
     </div>
     <div class="tbl-wrap">
       <table>
-        <thead><tr><th>النظام</th><th>الشركة</th><th>طريقة الدفع</th><th>المبلغ (ر.س)</th><th>بالدولار</th><th>تاريخ الانتهاء</th><th>الحالة</th></tr></thead>
-        <tbody id="tbody"><tr><td colspan="7" class="loading-msg">جاري تحميل البيانات...</td></tr></tbody>
+        <thead><tr><th>النظام</th><th>الشركة</th><th>طريقة الدفع</th><th>المبلغ (ر.س)</th><th>بالدولار</th><th>تاريخ الانتهاء</th><th>الأيام المتبقية</th><th>الحالة</th></tr></thead>
+        <tbody id="tbody"><tr><td colspan="8" class="loading-msg">جاري تحميل البيانات...</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -111,6 +114,9 @@ const fmt=v=>n(v).toLocaleString('ar-SA');
 const fl=f=>f==='yearly'?'سنوي':f==='monthly'?'شهري':f==='quarterly'?'ربع سنوي':f||'';
 const fb=f=>f==='yearly'?'b-yearly':f==='monthly'?'b-monthly':'b-quarterly';
 const fd=d=>{if(!d)return'-';const p=d.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:d;};
+function calcDaysLeft(e){if(!e)return null;const p=e.split('-');if(p.length!==3)return null;const exp=new Date(+p[0],+p[1]-1,+p[2]);const t=new Date();t.setHours(0,0,0,0);return Math.round((exp-t)/(864e5));}
+function daysBadgeClass(d){if(d===null)return'';if(d<0)return'b-days-red';if(d<10)return'b-days-red';if(d<=20)return'b-days-yellow';return'b-days-green';}
+function daysBadgeText(d){if(d===null)return'-';if(d<0)return'منتهي منذ '+Math.abs(d)+' يوم';return'باقي '+d+' يوم';}
 function annualSar(s){const a=n(s.amountSar);return s.paymentMethod==='yearly'?a:s.paymentMethod==='monthly'?a*12:a*4;}
 function render(){
   const d=allData;
@@ -148,17 +154,17 @@ function render(){
   else if(fSt==='stopped')rows=rows.filter(x=>x.status==='stopped');
   else if(['yearly','monthly','quarterly'].includes(fSt))rows=rows.filter(x=>x.paymentMethod===fSt);
   document.getElementById('tcount').textContent=rows.length+' نتيجة من أصل '+d.length;
-  if(!rows.length){document.getElementById('tbody').innerHTML='<tr><td colspan="7" class="empty-msg">لا توجد بيانات</td></tr>';return;}
-  document.getElementById('tbody').innerHTML=rows.map(s=>'<tr><td><strong>'+s.systemName+'</strong></td><td>'+s.company+'</td><td><span class="badge '+fb(s.paymentMethod)+'">'+fl(s.paymentMethod)+'</span></td><td>'+fmt(s.amountSar)+'</td><td>'+(s.amountUsd||'-')+'</td><td>'+fd(s.expiryDate)+'</td><td><span class="badge '+(s.status==='active'?'b-active':'b-stopped')+'">'+(s.status==='active'?'نشط':'متوقف')+'</span></td></tr>').join('');
+  if(!rows.length){document.getElementById('tbody').innerHTML='<tr><td colspan="8" class="empty-msg">لا توجد بيانات</td></tr>';return;}
+  document.getElementById('tbody').innerHTML=rows.map(s=>'<tr><td><strong>'+s.systemName+'</strong></td><td>'+s.company+'</td><td><span class="badge '+fb(s.paymentMethod)+'">'+fl(s.paymentMethod)+'</span></td><td>'+fmt(s.amountSar)+'</td><td>'+(s.amountUsd||'-')+'</td><td>'+fd(s.expiryDate)+'</td><td><span class="badge '+daysBadgeClass(calcDaysLeft(s.expiryDate))+'">'+daysBadgeText(calcDaysLeft(s.expiryDate))+'</span></td><td><span class="badge '+(s.status==='active'?'b-active':'b-stopped')+'">'+(s.status==='active'?'نشط':'متوقف')+'</span></td></tr>').join('');
 }
 document.getElementById('fCo').addEventListener('click',e=>{const b=e.target.closest('.fbtn');if(b&&b.dataset.co){fCo=b.dataset.co;render();}});
 document.getElementById('fSt').addEventListener('click',e=>{const b=e.target.closest('.fbtn');if(b&&b.dataset.st){fSt=b.dataset.st;render();}});
 onValue(ref(db,'subscriptions'),snap=>{
   const v=snap.val();
   allData=v?Object.entries(v).map(([id,d])=>({id,...d})):[];
-  if(!allData.length){document.getElementById('tbody').innerHTML='<tr><td colspan="7" class="empty-msg">لا توجد بيانات — أضف بيانات من صفحة الأدمن</td></tr>';document.getElementById('lastUpdate').textContent='قاعدة البيانات فارغة';['st0','st1','st2','st3'].forEach(i=>document.getElementById(i).textContent='0');return;}
+  if(!allData.length){document.getElementById('tbody').innerHTML='<tr><td colspan="8" class="empty-msg">لا توجد بيانات — أضف بيانات من صفحة الأدمن</td></tr>';document.getElementById('lastUpdate').textContent='قاعدة البيانات فارغة';['st0','st1','st2','st3'].forEach(i=>document.getElementById(i).textContent='0');return;}
   render();
-},(err)=>{console.error(err);document.getElementById('lastUpdate').textContent='تعذر الاتصال بـ Firebase';document.getElementById('tbody').innerHTML='<tr><td colspan="7" class="empty-msg">تعذر تحميل البيانات</td></tr>';});
+},(err)=>{console.error(err);document.getElementById('lastUpdate').textContent='تعذر الاتصال بـ Firebase';document.getElementById('tbody').innerHTML='<tr><td colspan="8" class="empty-msg">تعذر تحميل البيانات</td></tr>';});
 </script>
 </body>
 </html>
